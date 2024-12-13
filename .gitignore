@@ -126,3 +126,4 @@ orleans.codegen.cs
 # Local development configuration files
 appsettings.Development.json
 appsettings.Local.json
+/FirstDay.UI/node_modules
