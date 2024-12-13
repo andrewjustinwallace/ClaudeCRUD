@@ -15,21 +15,21 @@ public class OnboardingController : ControllerBase
         _onboardingService = onboardingService;
     }
 
-    [HttpGet("it-employee/{id}/pending-tasks")]
+    [HttpGet("itemployee/{id}/pending-tasks")]
     public async Task<ActionResult<IEnumerable<ITEmployeePendingTask>>> GetITEmployeePendingTasks(int id)
     {
         var tasks = await _onboardingService.GetITEmployeePendingTasksAsync(id);
         return Ok(tasks);
     }
 
-    [HttpGet("new-hire/{id}/setup-status")]
+    [HttpGet("newhire/{id}/setup-status")]
     public async Task<ActionResult<IEnumerable<NewHireSetupStatus>>> GetNewHireSetupStatus(int id)
     {
         var status = await _onboardingService.GetNewHireSetupStatusAsync(id);
         return Ok(status);
     }
 
-    [HttpGet("it-employee/workload")]
+    [HttpGet("itemployee/workload")]
     public async Task<ActionResult<IEnumerable<ITEmployeeWorkload>>> GetITEmployeeWorkload()
     {
         var workload = await _onboardingService.GetITEmployeeWorkloadAsync();

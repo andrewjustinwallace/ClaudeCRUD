@@ -1,16 +1,14 @@
-import axios from 'axios';
+import api from './api';
 import { WorkloadSummary } from '../types/workload';
-
-const BASE_URL = '/api/it';
 
 export const workloadService = {
     getWorkloadSummary: async (): Promise<WorkloadSummary> => {
-        const { data } = await axios.get(`${BASE_URL}/employee/workload`);
+        const { data } = await api.get('/itemployee/workload');
         return data;
     },
 
     getEmployeeWorkload: async (employeeId: string) => {
-        const { data } = await axios.get(`${BASE_URL}/employee/${employeeId}/workload`);
+        const { data } = await api.get(`/itemployee/${employeeId}/workload`);
         return data;
     }
 };
