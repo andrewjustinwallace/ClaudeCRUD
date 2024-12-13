@@ -1,6 +1,6 @@
-using ClaudeCRUD.API.Models.StoredProcedureModels;
+using FirstDay.API.Models.StoredProcedureModels;
 
-namespace ClaudeCRUD.API.Services;
+namespace FirstDay.API.Services;
 
 public interface IOnboardingService
 {

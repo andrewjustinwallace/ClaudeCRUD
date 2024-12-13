@@ -1,8 +1,8 @@
-using ClaudeCRUD.API.Models.StoredProcedureModels;
+using FirstDay.API.Models.StoredProcedureModels;
 using Dapper;
 using Npgsql;
 
-namespace ClaudeCRUD.API.Services;
+namespace FirstDay.API.Services;
 
 public class OnboardingService : IOnboardingService
 {

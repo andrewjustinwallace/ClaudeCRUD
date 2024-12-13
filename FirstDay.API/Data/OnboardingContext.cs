@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ClaudeCRUD.API.Models;
+using FirstDay.API.Models;
 
-namespace ClaudeCRUD.API.Data;
+namespace FirstDay.API.Data;
 
 public class OnboardingContext : DbContext
 {

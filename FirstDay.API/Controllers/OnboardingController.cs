@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using ClaudeCRUD.API.Services;
-using ClaudeCRUD.API.Models.StoredProcedureModels;
+using FirstDay.API.Services;
+using FirstDay.API.Models.StoredProcedureModels;
 
-namespace ClaudeCRUD.API.Controllers;
+namespace FirstDay.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

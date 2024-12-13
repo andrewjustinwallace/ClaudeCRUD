@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using ClaudeCRUD.API.Data;
-using ClaudeCRUD.API.Services;
+using FirstDay.API.Data;
+using FirstDay.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

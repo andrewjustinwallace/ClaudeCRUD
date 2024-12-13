@@ -1,4 +1,4 @@
-namespace ClaudeCRUD.API.Models.StoredProcedureModels;
+namespace FirstDay.API.Models.StoredProcedureModels;
 
 public class CompanyOnboardingProgress
 {
