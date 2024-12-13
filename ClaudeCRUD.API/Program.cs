@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ClaudeCRUD.API.Data;
+using ClaudeCRUD.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,9 @@ builder.Services.AddControllers();
 // Add PostgreSQL DbContext
 builder.Services.AddDbContext<OnboardingContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register OnboardingService
+builder.Services.AddScoped<IOnboardingService, OnboardingService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

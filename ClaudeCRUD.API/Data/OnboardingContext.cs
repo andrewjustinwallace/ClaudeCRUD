@@ -28,6 +28,6 @@ public class OnboardingContext : DbContext
         modelBuilder.Entity<ITEmployee>().ToTable("itemployees");
         modelBuilder.Entity<NewHire>().ToTable("newhires");
         modelBuilder.Entity<SetupType>().ToTable("setuptypes");
-        modelBuilder.Entity<ITSetupTask>().ToTable("itsettasks");
+        modelBuilder.Entity<ITSetupTask>().ToTable("itsetuptasks");
     }
 }
