@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ITEmployeeWorkload } from "../../../types/workload";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { workloadService } from "../../../services/workloadService";
 
 const WorkloadChart = () => {
-  const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   const { data, isLoading, error } = useQuery<ITEmployeeWorkload[]>({
     queryKey: ["workload"],
@@ -19,6 +19,10 @@ const WorkloadChart = () => {
     },
     retry: 1,
   });
+
+  const handleEmployeeSelect = (employeeId: number) => {
+    navigate(`/tasks/employee/${employeeId}`);
+  };
 
   if (isLoading) {
     return (
@@ -101,12 +105,8 @@ const WorkloadChart = () => {
               {data?.map((employee) => (
                 <tr
                   key={employee.itEmployeeId}
-                  className={`hover:bg-gray-50 cursor-pointer ${
-                    selectedEmployee === employee.itEmployeeId
-                      ? "bg-blue-50"
-                      : ""
-                  }`}
-                  onClick={() => setSelectedEmployee(employee.itEmployeeId)}
+                  onClick={() => handleEmployeeSelect(employee.itEmployeeId)}
+                  className="hover:bg-gray-50 cursor-pointer transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {employee.itEmployeeName}

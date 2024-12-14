@@ -11,6 +11,7 @@ export const AppRoutes = () => {
             <Route path="/" element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="tasks" element={<Tasks />} />
+                <Route path="tasks/employee/:employeeId" element={<Tasks />} />
                 <Route path="tasks/:taskId" element={<TaskDetails />} />
                 <Route path="progress" element={<CompanyProgress />} />
             </Route>

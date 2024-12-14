@@ -10,7 +10,7 @@ export interface ITEmployeeWorkload {
 export interface ITEmployeePendingTask {
   taskId: number;
   newHireName: string;
-  setupTypeName: string;
+  setupType: string;
   dueDate: string;
   isOverdue: boolean;
 }
