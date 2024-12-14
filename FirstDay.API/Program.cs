@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using FirstDay.API.Data;
 using FirstDay.API.Services;
 using FirstDay.API.Repositories;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,14 +12,19 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
 
-// Add services to the container.
-builder.Services.AddControllers();
+// Configure JSON options for case sensitivity
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
 
 // Add PostgreSQL DbContext
 builder.Services.AddDbContext<OnboardingContext>(options =>
@@ -30,13 +37,14 @@ builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IOnboardingService, OnboardingService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Configure Dapper to use snake case
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

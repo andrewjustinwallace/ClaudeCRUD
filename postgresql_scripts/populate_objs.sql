@@ -172,3 +172,26 @@ SET password = CASE
     WHEN ITEmployeeID = 1 THEN 'admin'
     ELSE 'it'
 END;
+
+-- Populate the junction table with existing relationships
+INSERT INTO test.ITEmployeeCompanies (ITEmployeeID, CompanyID)
+SELECT ie.ITEmployeeID, nh.CompanyID
+FROM test.ITEmployees ie
+JOIN test.ITSetupTasks ist ON ie.ITEmployeeID = ist.ITEmployeeID
+JOIN test.NewHires nh ON ist.NewHireID = nh.NewHireID
+GROUP BY ie.ITEmployeeID, nh.CompanyID;
+
+-- Add some additional company assignments for testing multiple companies
+INSERT INTO test.ITEmployeeCompanies (ITEmployeeID, CompanyID)
+SELECT 
+    e.ITEmployeeID,
+    c.CompanyID
+FROM test.ITEmployees e
+CROSS JOIN test.Companies c
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM test.ITEmployeeCompanies ec 
+    WHERE ec.ITEmployeeID = e.ITEmployeeID 
+    AND ec.CompanyID = c.CompanyID
+)
+AND random() < 0.3;  -- 30% chance of additional assignment

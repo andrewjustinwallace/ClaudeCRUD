@@ -1,12 +1,17 @@
 import api from './api';
 
+interface Company {
+    companyId: number;
+    companyName: string;
+}
+
 interface LoginResponse {
     authenticated: boolean;
     employeeId: number;
     firstName: string;
     lastName: string;
     userType: string;
-    companyId: number;
+    companies: Company[];
 }
 
 export async function login(username: string, password: string): Promise<LoginResponse> {

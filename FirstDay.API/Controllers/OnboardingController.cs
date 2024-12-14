@@ -15,10 +15,10 @@ public class OnboardingController : ControllerBase
         _onboardingService = onboardingService;
     }
 
-    [HttpGet("itemployee/{id}/pendingtasks")]
-    public async Task<ActionResult<IEnumerable<ITEmployeePendingTask>>> GetITEmployeePendingTasks(int id)
+    [HttpGet("itemployee/{id}/company/{companyId}/pendingtasks")]
+    public async Task<ActionResult<IEnumerable<ITEmployeePendingTask>>> GetITEmployeePendingTasks(int id, int companyId)
     {
-        var tasks = await _onboardingService.GetITEmployeePendingTasksAsync(id);
+        var tasks = await _onboardingService.GetITEmployeePendingTasksAsync(id, companyId);
         return Ok(tasks);
     }
 
@@ -50,10 +50,10 @@ public class OnboardingController : ControllerBase
         return Ok(progress);
     }
 
-    [HttpGet("tasks/overdue")]
-    public async Task<ActionResult<IEnumerable<OverdueTask>>> GetOverdueTasks()
+    [HttpGet("itemployee/{id}/company/{companyId}/overduetasks")]
+    public async Task<ActionResult<IEnumerable<OverdueTask>>> GetOverdueTasks(int id, int companyId)
     {
-        var tasks = await _onboardingService.GetOverdueTasksAsync();
+        var tasks = await _onboardingService.GetOverdueTasksAsync(id, companyId);
         return Ok(tasks);
     }
 }

@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Navigation from "./components/Navigation";
+import SelectCompany from "./pages/SelectCompany";
 
 const queryClient = new QueryClient();
 
@@ -27,15 +28,23 @@ function AppContent() {
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isLoginPage = location.pathname === "/login";
-  const showAdminNavigation = !isLoginPage && user.userType === "Admin";
+  const isSelectCompanyPage = location.pathname === "/select-company";
+  const showNavigation = !isLoginPage && !isSelectCompanyPage;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* {showNavigation && <Navigation />} */}
-      <Navigation />
-      <main className={`${showAdminNavigation ? "pt-4" : ""}`}>
+      {showNavigation && <Navigation />}
+      <main className={`${showNavigation ? "pt-4" : ""}`}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route 
+            path="/select-company" 
+            element={
+              <PrivateRoute>
+                <SelectCompany />
+              </PrivateRoute>
+            } 
+          />
           <Route
             path="/dashboard"
             element={

@@ -8,8 +8,15 @@ export const workloadService = {
   },
 
   getPendingTasks: async (employeeId: number) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const companyId = user.selectedCompanyId;
+    
+    if (!companyId) {
+      throw new Error('Company ID not found');
+    }
+
     const { data } = await api.get(
-      `/onboarding/itemployee/${employeeId}/pendingtasks`
+      `/onboarding/itemployee/${employeeId}/company/${companyId}/pendingtasks`
     );
     return data;
   },

@@ -130,3 +130,31 @@ ALTER TABLE test.itemployees ADD COLUMN password VARCHAR(1000);
 -- Make UserTypeID NOT NULL after updating existing records
 ALTER TABLE test.ITEmployees 
 ALTER COLUMN UserTypeID SET NOT NULL;
+
+
+-- Drop the foreign key constraint from ITEmployees to Companies
+ALTER TABLE test.ITEmployees 
+DROP CONSTRAINT IF EXISTS FK_ITEmployees_Companies;
+
+-- Drop the CompanyID column from ITEmployees
+ALTER TABLE test.ITEmployees 
+DROP COLUMN IF EXISTS CompanyID;
+
+-- Create IT Employee-Company junction table
+CREATE TABLE test.ITEmployeeCompanies (
+    ITEmployeeCompanyID SERIAL PRIMARY KEY,
+    ITEmployeeID INTEGER NOT NULL,
+    CompanyID INTEGER NOT NULL,
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ModifiedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT FK_ITEmployeeCompanies_ITEmployees 
+        FOREIGN KEY (ITEmployeeID) REFERENCES test.ITEmployees(ITEmployeeID),
+    CONSTRAINT FK_ITEmployeeCompanies_Companies 
+        FOREIGN KEY (CompanyID) REFERENCES test.Companies(CompanyID),
+    CONSTRAINT UQ_ITEmployeeCompany UNIQUE (ITEmployeeID, CompanyID)
+);
+
+-- Create index for better query performance
+CREATE INDEX IX_ITEmployeeCompanies_ITEmployeeID ON test.ITEmployeeCompanies(ITEmployeeID);
+CREATE INDEX IX_ITEmployeeCompanies_CompanyID ON test.ITEmployeeCompanies(CompanyID);
+

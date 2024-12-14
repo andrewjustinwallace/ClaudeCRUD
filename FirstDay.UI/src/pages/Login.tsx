@@ -15,14 +15,28 @@ export default function Login() {
     try {
       const response = await login(username, password);
       if (response.authenticated) {
-        // Store user info in localStorage or state management
+        // Store user info in localStorage
         localStorage.setItem("user", JSON.stringify(response));
 
-        // Redirect based on user type
-        if (response.userType === "Admin") {
-          navigate("/dashboard");
+        // If user has multiple companies, redirect to company selection
+        if (response.companies?.length > 1) {
+          navigate("/select-company");
+        } else if (response.companies?.length === 1) {
+          // If only one company, set it and redirect based on user type
+          const userWithCompany = {
+            ...response,
+            selectedCompanyId: response.companies[0].companyId
+          };
+          localStorage.setItem("user", JSON.stringify(userWithCompany));
+          
+          if (response.userType === "Admin") {
+            navigate("/dashboard");
+          } else {
+            navigate(`/tasks/employee/${response.employeeId}`);
+          }
         } else {
-          navigate(`/tasks/employee/${response.employeeId}`);
+          // Handle case with no companies
+          setError("No companies assigned to user");
         }
       }
     } catch (err) {

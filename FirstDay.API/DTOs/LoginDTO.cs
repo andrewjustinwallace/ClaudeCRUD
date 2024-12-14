@@ -13,6 +13,6 @@ namespace FirstDay.API.DTOs
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string UserType { get; set; } = string.Empty;
-        public int CompanyId { get; set; }
+        public List<CompanyDTO> Companies { get; set; } = new();
     }
 }

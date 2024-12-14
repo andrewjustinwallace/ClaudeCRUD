@@ -13,12 +13,12 @@ public class OnboardingService : IOnboardingService
         _connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new ArgumentNullException(nameof(configuration));
     }
 
-    public async Task<IEnumerable<ITEmployeePendingTask>> GetITEmployeePendingTasksAsync(int itEmployeeId)
+    public async Task<IEnumerable<ITEmployeePendingTask>> GetITEmployeePendingTasksAsync(int itEmployeeId, int companyId)
     {
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QueryAsync<ITEmployeePendingTask>(
-            "SELECT * FROM test.get_it_employee_pending_tasks(@ITEmployeeId)",
-            new { ITEmployeeId = itEmployeeId });
+            "SELECT * FROM test.get_it_employee_pending_tasks(@ITEmployeeId, @companyId)",
+            new { ITEmployeeId = itEmployeeId, companyId = companyId });
     }
 
     public async Task<IEnumerable<NewHireSetupStatus>> GetNewHireSetupStatusAsync(int newHireId)
@@ -51,10 +51,11 @@ public class OnboardingService : IOnboardingService
             new { CompanyId = companyId });
     }
 
-    public async Task<IEnumerable<OverdueTask>> GetOverdueTasksAsync()
+    public async Task<IEnumerable<OverdueTask>> GetOverdueTasksAsync(int itEmployeeId, int companyId)
     {
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QueryAsync<OverdueTask>(
-            "SELECT * FROM test.get_overdue_tasks()");
+            "SELECT * FROM test.get_overdue_tasks(@ITEmployeeId, @companyId)",
+            new { ITEmployeeId = itEmployeeId, companyId = companyId });
     }
 }

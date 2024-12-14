@@ -1,5 +1,8 @@
 -- get all pending tasks for a specific it employee
-CREATE OR REPLACE FUNCTION test.get_it_employee_pending_tasks(p_it_employee_id integer)
+CREATE OR REPLACE FUNCTION test.get_it_employee_pending_tasks(
+    p_it_employee_id integer,
+    p_company_id integer
+)
 RETURNS TABLE (
     taskid integer,
     newhireid integer,
@@ -25,10 +28,14 @@ BEGIN
     JOIN test.newhires nh ON ist.newhireid = nh.newhireid
     JOIN test.setuptypes st ON ist.setuptypeid = st.setuptypeid
     JOIN test.companies c ON nh.companyid = c.companyid
+    JOIN test.ITEmployeeCompanies iec ON ist.ITEmployeeID = iec.ITEmployeeID 
+        AND nh.CompanyID = iec.CompanyID
     WHERE ist.itemployeeid = p_it_employee_id
+    AND nh.companyid = p_company_id
     ORDER BY ist.scheduleddate;
 END;
 $$ LANGUAGE plpgsql;
+
 
 -- get all setup tasks for a specific new hire
 create or replace function test.get_new_hire_setup_status(p_new_hire_id integer)
@@ -63,7 +70,8 @@ returns table (
     pendingtasks bigint,
     completedtasks bigint,
     totaltasks bigint,
-    companyname varchar(100)
+    companyname varchar(100),
+    companyid integer 
 ) as $$
 begin
     return query
@@ -73,11 +81,13 @@ begin
         count(case when ist.iscompleted = false then 1 end),
         count(case when ist.iscompleted = true then 1 end),
         count(*),
-        c.companyname
+        c.companyname,
+		c.companyid
     from test.itemployees ite
     left join test.itsetuptasks ist on ite.itemployeeid = ist.itemployeeid
-    left join test.companies c on ite.companyid = c.companyid
-    group by ite.itemployeeid, ite.firstname, ite.lastname, c.companyname
+	JOIN test.ITEmployeeCompanies iec ON ist.ITEmployeeID = iec.ITEmployeeID
+    left join test.companies c on iec.companyid = c.companyid
+    group by ite.itemployeeid, ite.firstname, ite.lastname, c.companyname, c.companyid
     order by pendingtasks desc;
 end;
 $$ language plpgsql;
@@ -137,8 +147,11 @@ end;
 $$ language plpgsql;
 
 -- get overdue tasks
-create or replace function test.get_overdue_tasks(p_it_employee_id integer)
-returns table (
+CREATE OR REPLACE FUNCTION test.get_overdue_tasks(
+    p_it_employee_id integer,
+    p_company_id integer
+)
+RETURNS TABLE (
     itsetuptaskid integer,
     itemployeename text,
     newhirename text,
@@ -146,10 +159,10 @@ returns table (
     scheduleddate date,
     daysoverdue integer,
     companyname varchar(100)
-) as $$
-begin
-    return query
-    select 
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
         ist.itsetuptaskid,
         ite.firstname || ' ' || ite.lastname,
         nh.firstname || ' ' || nh.lastname,
@@ -157,17 +170,21 @@ begin
         ist.scheduleddate,
         (current_date - ist.scheduleddate)::integer,
         c.companyname
-    from test.itsetuptasks ist
-    join test.itemployees ite on ist.itemployeeid = ite.itemployeeid
-    join test.newhires nh on ist.newhireid = nh.newhireid
-    join test.setuptypes st on ist.setuptypeid = st.setuptypeid
-    join test.companies c on nh.companyid = c.companyid
-    where ist.iscompleted = false
-    and ist.scheduleddate < current_date
-	and ist.itemployeeid = p_it_employee_id
-    order by daysoverdue desc;
-end;
-$$ language plpgsql;
+    FROM test.itsetuptasks ist
+    JOIN test.itemployees ite ON ist.itemployeeid = ite.itemployeeid
+    JOIN test.newhires nh ON ist.newhireid = nh.newhireid
+    JOIN test.setuptypes st ON ist.setuptypeid = st.setuptypeid
+    JOIN test.companies c ON nh.companyid = c.companyid
+    JOIN test.ITEmployeeCompanies iec ON ist.ITEmployeeID = iec.ITEmployeeID 
+        AND nh.CompanyID = iec.CompanyID
+    WHERE ist.iscompleted = false
+    AND ist.scheduleddate < current_date
+    AND ist.itemployeeid = p_it_employee_id
+    AND nh.companyid = p_company_id
+    ORDER BY daysoverdue desc;
+END;
+$$ LANGUAGE plpgsql;
+
 
 -- Function to update task completion status
 CREATE OR REPLACE FUNCTION test.update_task_completion(
@@ -210,7 +227,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create login function
-create or replace function test.authenticate_user(
+CREATE OR REPLACE FUNCTION test.get_authenticated_user(
     p_username VARCHAR,
     p_password VARCHAR
 )
@@ -219,8 +236,7 @@ RETURNS TABLE (
     employeeid INTEGER,
     firstname VARCHAR,
     lastname VARCHAR,
-    usertype VARCHAR,
-    companyid INTEGER
+    usertype VARCHAR
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -229,14 +245,33 @@ BEGIN
         e.ITEmployeeID,
         e.FirstName,
         e.LastName,
-        ut.TypeName as user_type,
-        e.CompanyID
+        ut.TypeName as user_type
     FROM test.ITEmployees e
     JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
     WHERE e.Username = p_username 
-    AND e.Password = p_password;  -- Note: In production, use proper password hashing
+    AND e.Password = p_password;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Get user's companies function
+CREATE OR REPLACE FUNCTION test.get_employee_companies(
+    p_employee_id INTEGER
+)
+RETURNS TABLE (
+    companyid INTEGER,
+    companyname VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c.CompanyID,
+        c.CompanyName
+    FROM test.ITEmployeeCompanies ec
+    JOIN test.Companies c ON ec.CompanyID = c.CompanyID
+    WHERE ec.ITEmployeeID = p_employee_id;
+END;
+$$ LANGUAGE plpgsql;
+
 
 -- example usage of the functions:
 /*
