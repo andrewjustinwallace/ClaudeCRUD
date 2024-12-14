@@ -1,16 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../../services/api";
 import { ClockIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { CompletionDialog } from "./CompletionDialog";
 
 interface Task {
-  id: string;
-  title: string;
-  status: string;
-  dueDate: string;
-  assignedTo: string;
+  itsetuptaskid: number;
+  itemployeeid: number;
+  newhireid: number;
+  setuptype: string;
+  newhirename: string;
+  scheduleddate: string;
+  companyname: string;
 }
 
 const TaskList = () => {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+
   const {
     data: tasks,
     isLoading,
@@ -22,6 +30,29 @@ const TaskList = () => {
       return data;
     },
   });
+
+  const handleCompleteTask = async (notes: string) => {
+    if (!selectedTask) return;
+
+    try {
+      await api.put("/tasks/complete", {
+        taskId: selectedTask.itsetuptaskid,
+        itEmployeeId: selectedTask.itemployeeid,
+        newHireId: selectedTask.newhireid,
+        notes: notes,
+      });
+
+      // Invalidate and refetch tasks
+      await queryClient.invalidateQueries({ queryKey: ["tasks"] });
+
+      // Close dialog
+      setIsCompletionDialogOpen(false);
+      setSelectedTask(null);
+    } catch (error) {
+      console.error("Error completing task:", error);
+      // You might want to add a toast notification here
+    }
+  };
 
   if (isLoading) {
     return (
@@ -41,35 +72,51 @@ const TaskList = () => {
   }
 
   return (
-    <div className="space-y-4">
-      {tasks?.map((task: Task) => (
-        <div
-          key={task.id}
-          className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium text-gray-900">{task.title}</h3>
-            <span
-              className={`px-2 py-1 rounded-full text-sm ${
-                task.status === "pending"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-green-100 text-green-800"
-              }`}
-            >
-              {task.status}
-            </span>
+    <>
+      <div className="space-y-4">
+        {tasks?.map((task: Task) => (
+          <div
+            key={task.itsetuptaskid}
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-900">
+                {task.setuptype}
+              </h3>
+              <button
+                onClick={() => {
+                  setSelectedTask(task);
+                  setIsCompletionDialogOpen(true);
+                }}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Pending
+              </button>
+            </div>
+            <div className="mt-2 flex items-center text-sm text-gray-500">
+              <ClockIcon className="h-4 w-4 mr-1" />
+              Scheduled: {new Date(task.scheduleddate).toLocaleDateString()}
+            </div>
+            <div className="mt-2 flex items-center text-sm text-gray-500">
+              <CheckCircleIcon className="h-4 w-4 mr-1" />
+              New Hire: {task.newhirename}
+            </div>
+            <div className="mt-2 text-sm text-gray-500">
+              Company: {task.companyname}
+            </div>
           </div>
-          <div className="mt-2 flex items-center text-sm text-gray-500">
-            <ClockIcon className="h-4 w-4 mr-1" />
-            Due: {new Date(task.dueDate).toLocaleDateString()}
-          </div>
-          <div className="mt-2 flex items-center text-sm text-gray-500">
-            <CheckCircleIcon className="h-4 w-4 mr-1" />
-            Assigned to: {task.assignedTo}
-          </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      <CompletionDialog
+        isOpen={isCompletionDialogOpen}
+        onClose={() => {
+          setIsCompletionDialogOpen(false);
+          setSelectedTask(null);
+        }}
+        onConfirm={handleCompleteTask}
+      />
+    </>
   );
 };
 

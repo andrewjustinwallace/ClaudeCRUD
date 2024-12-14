@@ -1,7 +1,7 @@
 -- get all pending tasks for a specific it employee
 create or replace function test.get_it_employee_pending_tasks(p_it_employee_id integer)
 returns table (
-    itsetuptaskid integer,
+    taskid integer,
     newhireid integer,
     newhirename text,
     setuptype varchar(100),
@@ -168,7 +168,7 @@ $$ language plpgsql;
 
 -- example usage of the functions:
 /*
-select * from test.get_it_employee_pending_tasks(4);
+select * from test.get_it_employee_pending_tasks(5);
 select * from test.get_new_hire_setup_status(1);
 select * from test.get_it_employee_workload();
 select * from test.get_todays_tasks();

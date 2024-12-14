@@ -1,18 +1,25 @@
 import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { workloadService } from '../services/workloadService';
 import { PendingTask } from '../types/tasks';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import { CompletionDialog } from '../components/tasks/CompletionDialog';
+import api from '../services/api';
 
 interface GroupedTasks {
-    [key: string]: PendingTask[];
+    [key: string]: (PendingTask & { isCompleted?: boolean })[];
 }
 
 const Tasks = () => {
     const { employeeId } = useParams<{ employeeId: string }>();
     const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
+    const [selectedTask, setSelectedTask] = useState<PendingTask | null>(null);
+    const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [completedTasks, setCompletedTasks] = useState<Set<number>>(new Set());
+    const queryClient = useQueryClient();
 
     const { data: tasks, isLoading, error } = useQuery<PendingTask[]>({
         queryKey: ['pendingTasks', employeeId],
@@ -28,6 +35,33 @@ const Tasks = () => {
             newExpanded.add(employee);
         }
         setExpandedEmployees(newExpanded);
+    };
+
+    const handleCompleteTask = async (notes: string) => {
+        if (!selectedTask || !employeeId) return;
+        
+        setIsSubmitting(true);
+        try {
+            const response = await api.put("/task/complete", {
+                taskId: selectedTask.taskId,
+                itEmployeeId: Number(employeeId),
+                newHireId: selectedTask.newHireId,
+                notes: notes
+            });
+
+            if (response.data.success) {
+                setCompletedTasks(prev => new Set(prev).add(selectedTask.taskId));
+                // Refresh the tasks list
+                await queryClient.invalidateQueries({ queryKey: ['pendingTasks', employeeId] });
+            }
+            
+            setIsCompletionDialogOpen(false);
+            setSelectedTask(null);
+        } catch (error) {
+            console.error("Error completing task:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (isLoading) {
@@ -75,7 +109,8 @@ const Tasks = () => {
         if (!acc[key]) {
             acc[key] = [];
         }
-        acc[key].push(task);
+        const isCompleted = completedTasks.has(task.taskId);
+        acc[key].push({ ...task, isCompleted });
         return acc;
     }, {});
 
@@ -107,7 +142,7 @@ const Tasks = () => {
                                     </span>
                                 </div>
                                 <div className="flex items-center">
-                                    {groupTasks.some(task => task.isOverdue) && (
+                                    {groupTasks.some(task => task.isOverdue && !task.isCompleted) && (
                                         <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
                                             Has overdue tasks
                                         </span>
@@ -127,13 +162,13 @@ const Tasks = () => {
                                                     Setup Type
                                                 </th>
                                                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">
-                                                    New Hire ID
-                                                </th>
-                                                <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">
                                                     Due Date
                                                 </th>
                                                 <th className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">
                                                     Status
+                                                </th>
+                                                <th className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">
+                                                    Action
                                                 </th>
                                             </tr>
                                         </thead>
@@ -146,22 +181,40 @@ const Tasks = () => {
                                                     <td className="py-2 text-sm text-gray-900">
                                                         {task.setupType}
                                                     </td>
-                                                    <td className="py-2 text-sm text-gray-900">
-                                                        {task.newHireId}
-                                                    </td>
                                                     <td className="py-2 text-sm text-gray-500">
                                                         {new Date(task.scheduledDate).toLocaleDateString()}
                                                     </td>
                                                     <td className="py-2 text-center">
                                                         <span
                                                             className={`px-2 py-1 text-xs rounded-full ${
-                                                                task.isOverdue
+                                                                task.isCompleted
+                                                                    ? 'bg-green-100 text-green-800'
+                                                                    : task.isOverdue
                                                                     ? 'bg-red-100 text-red-800'
                                                                     : 'bg-yellow-100 text-yellow-800'
                                                             }`}
                                                         >
-                                                            {task.isOverdue ? 'Overdue' : 'Pending'}
+                                                            {task.isCompleted ? 'Completed' : task.isOverdue ? 'Overdue' : 'Pending'}
                                                         </span>
+                                                    </td>
+                                                    <td className="py-2 text-center">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (!task.isCompleted) {
+                                                                    setSelectedTask(task);
+                                                                    setIsCompletionDialogOpen(true);
+                                                                }
+                                                            }}
+                                                            className={`px-3 py-1 ${
+                                                                task.isCompleted
+                                                                    ? 'bg-gray-300 cursor-not-allowed'
+                                                                    : 'bg-blue-500 hover:bg-blue-600'
+                                                            } text-white rounded-md text-sm`}
+                                                            disabled={task.isCompleted}
+                                                        >
+                                                            {task.isCompleted ? 'Completed' : 'Pending'}
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -173,6 +226,18 @@ const Tasks = () => {
                     ))}
                 </div>
             </div>
+
+            <CompletionDialog
+                isOpen={isCompletionDialogOpen}
+                onClose={() => {
+                    if (!isSubmitting) {
+                        setIsCompletionDialogOpen(false);
+                        setSelectedTask(null);
+                    }
+                }}
+                onConfirm={handleCompleteTask}
+                isSubmitting={isSubmitting}
+            />
         </div>
     );
 };

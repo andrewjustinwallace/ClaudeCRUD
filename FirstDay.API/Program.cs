@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FirstDay.API.Data;
 using FirstDay.API.Services;
+using FirstDay.API.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,10 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<OnboardingContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register OnboardingService
+// Register repositories
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+
+// Register services
 builder.Services.AddScoped<IOnboardingService, OnboardingService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
