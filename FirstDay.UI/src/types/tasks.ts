@@ -14,3 +14,13 @@ export interface OverdueTask {
     dueDate: string;
     daysOverdue: number;
 }
+
+export interface PendingTask {
+    taskId: number;
+    newHireId: number;
+    newHireName: string;
+    setupType: string;
+    scheduledDate: string;
+    companyName: string;
+    isOverdue?: boolean;
+}
