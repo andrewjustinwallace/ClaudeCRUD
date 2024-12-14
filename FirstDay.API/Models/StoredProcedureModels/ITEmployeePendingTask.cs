@@ -11,4 +11,5 @@ public class ITEmployeePendingTask
     public DateTime ScheduledDate { get; set; }
     public string CompanyName { get; set; } = string.Empty;
     public bool IsCompleted { get; set; }
+    public string Details { get; set; } = string.Empty;
 }

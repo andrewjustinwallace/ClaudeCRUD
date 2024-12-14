@@ -16,6 +16,7 @@ const Tasks = () => {
     const { employeeId } = useParams<{ employeeId: string }>();
     const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set());
     const [selectedTask, setSelectedTask] = useState<PendingTask | null>(null);
+    const [expandedTask, setExpandedTask] = useState<number | null>(null);
     const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [completedTasks, setCompletedTasks] = useState<Set<number>>(new Set());
@@ -36,6 +37,16 @@ const Tasks = () => {
             newExpanded.add(employee);
         }
         setExpandedEmployees(newExpanded);
+    };
+
+    const toggleTaskDetails = (taskId: number, e: React.MouseEvent) => {
+        // Check if the click was on the Complete button or its container
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'BUTTON' || target.closest('button')) {
+            return;
+        }
+        
+        setExpandedTask(expandedTask === taskId ? null : taskId);
     };
 
     const handleCompleteTask = async (notes: string) => {
@@ -103,7 +114,6 @@ const Tasks = () => {
         );
     }
 
-    // Filter and group tasks based on completion status
     const filteredTasks = tasks.filter(task => 
         showCompleted || !(task.isCompleted || completedTasks.has(task.taskId))
     );
@@ -204,48 +214,64 @@ const Tasks = () => {
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
                                             {groupTasks.map((task) => (
-                                                <tr key={task.taskId}>
-                                                    <td className="py-2 text-sm text-gray-900">
-                                                        {task.taskId}
-                                                    </td>
-                                                    <td className="py-2 text-sm text-gray-900">
-                                                        {task.setupType}
-                                                    </td>
-                                                    <td className="py-2 text-sm text-gray-500">
-                                                        {new Date(task.scheduledDate).toLocaleDateString()}
-                                                    </td>
-                                                    <td className="py-2 text-center">
-                                                        <span
-                                                            className={`px-2 py-1 text-xs rounded-full ${
-                                                                task.isCompleted
-                                                                    ? 'bg-green-100 text-green-800'
-                                                                    : task.isOverdue
-                                                                    ? 'bg-red-100 text-red-800'
-                                                                    : 'bg-yellow-100 text-yellow-800'
-                                                            }`}
-                                                        >
-                                                            {task.isCompleted ? 'Completed' : task.isOverdue ? 'Overdue' : 'Pending'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="py-2 text-center">
-                                                        {task.isCompleted ? (
-                                                            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
-                                                                Completed
-                                                            </span>
-                                                        ) : (
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setSelectedTask(task);
-                                                                    setIsCompletionDialogOpen(true);
-                                                                }}
-                                                                className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm"
+                                                <>
+                                                    <tr 
+                                                        key={task.taskId}
+                                                        onClick={(e) => toggleTaskDetails(task.taskId, e)}
+                                                        className="cursor-pointer hover:bg-gray-50"
+                                                    >
+                                                        <td className="py-2 text-sm text-gray-900">
+                                                            {task.taskId}
+                                                        </td>
+                                                        <td className="py-2 text-sm text-gray-900">
+                                                            {task.setupType}
+                                                        </td>
+                                                        <td className="py-2 text-sm text-gray-500">
+                                                            {new Date(task.scheduledDate).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="py-2 text-center">
+                                                            <span
+                                                                className={`px-2 py-1 text-xs rounded-full ${
+                                                                    task.isCompleted
+                                                                        ? 'bg-green-100 text-green-800'
+                                                                        : task.isOverdue
+                                                                        ? 'bg-red-100 text-red-800'
+                                                                        : 'bg-yellow-100 text-yellow-800'
+                                                                }`}
                                                             >
-                                                                Complete
-                                                            </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
+                                                                {task.isCompleted ? 'Completed' : task.isOverdue ? 'Overdue' : 'Pending'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2 text-center">
+                                                            {task.isCompleted ? (
+                                                                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
+                                                                    Completed
+                                                                </span>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setSelectedTask(task);
+                                                                        setIsCompletionDialogOpen(true);
+                                                                    }}
+                                                                    className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm"
+                                                                >
+                                                                    Complete
+                                                                </button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                    {expandedTask === task.taskId && (
+                                                        <tr key={`${task.taskId}-details`}>
+                                                            <td colSpan={5} className="bg-gray-50 px-4 py-3">
+                                                                <div className="text-sm text-gray-700">
+                                                                    <h4 className="font-medium mb-2">Details:</h4>
+                                                                    <p className="whitespace-pre-wrap">{task.details}</p>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </>
                                             ))}
                                         </tbody>
                                     </table>

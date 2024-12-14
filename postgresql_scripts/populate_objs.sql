@@ -122,3 +122,30 @@ UPDATE test.itemployees SET modifieddate = CURRENT_TIMESTAMP;
 UPDATE test.newhires SET modifieddate = CURRENT_TIMESTAMP;
 UPDATE test.setuptypes SET modifieddate = CURRENT_TIMESTAMP;
 UPDATE test.itsetuptasks SET modifieddate = CURRENT_TIMESTAMP;
+
+
+-- Add the details column
+ALTER TABLE test.itsetuptasks ADD COLUMN details VARCHAR(1000);
+
+-- Update existing records with dummy data
+UPDATE test.itsetuptasks
+SET details = CASE 
+    WHEN setupTypeId = 1 THEN 'Laptop configured with standard development environment including Visual Studio, Git, and required SDKs. Added to domain and configured security policies.'
+    WHEN setupTypeId = 2 THEN 'Email account created with standard permissions. Added to relevant distribution lists and configured Outlook settings.'
+    WHEN setupTypeId = 3 THEN 'Initial password set and MFA configured using company standard authentication app. Security policies applied.'
+    WHEN setupTypeId = 4 THEN 'Network access granted to development resources. VPN access configured and tested.'
+    WHEN setupTypeId = 5 THEN 'All network printers configured. Default printer set to nearest office printer.'
+    WHEN setupTypeId = 6 THEN 'Phone extension assigned and voicemail configured. Added to company directory.'
+    WHEN setupTypeId = 7 THEN 'Development tools and standard software packages installed according to department requirements.'
+    WHEN setupTypeId = 8 THEN 'Initial security training completed. Phishing awareness and data protection modules assigned.'
+    WHEN setupTypeId = 9 THEN 'Security badge created with building access permissions for main office and development areas.'
+    WHEN setupTypeId = 10 THEN 'Document management system access configured. Added to relevant project repositories.'
+    WHEN setupTypeId = 11 THEN 'Remote access tools configured including VPN and remote desktop. Tested connectivity.'
+    WHEN setupTypeId = 12 THEN 'Time tracking software access granted. Project codes and categories configured.'
+    WHEN setupTypeId = 13 THEN 'Team chat software installed and configured. Added to relevant team channels.'
+    WHEN setupTypeId = 14 THEN 'Department share access granted. Mapped network drives configured.'
+    WHEN setupTypeId = 15 THEN 'Mobile device configured with email, calendar, and company security policies.'
+    ELSE 'Standard setup completed according to company policies.'
+END;
+
+

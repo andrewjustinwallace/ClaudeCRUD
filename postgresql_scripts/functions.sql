@@ -1,33 +1,34 @@
 -- get all pending tasks for a specific it employee
-create or replace function test.get_it_employee_pending_tasks(p_it_employee_id integer)
-returns table (
+CREATE OR REPLACE FUNCTION test.get_it_employee_pending_tasks(p_it_employee_id integer)
+RETURNS TABLE (
     taskid integer,
     newhireid integer,
     newhirename text,
     setuptype varchar(100),
     scheduleddate date,
+    iscompleted boolean,
     companyname varchar(100),
-    iscompleted bool
-) as $$
-begin
-    return query
-    select 
-	    ist.itsetuptaskid,
-	    nh.newhireid,
-	    nh.firstname || ' ' || nh.lastname,
-	    st.setupname,
-	    ist.scheduleddate,
-	    c.companyname,
-		ist.iscompleted
-	from test.itsetuptasks ist
-	join test.newhires nh on ist.newhireid = nh.newhireid
-	join test.setuptypes st on ist.setuptypeid = st.setuptypeid
-	join test.companies c on nh.companyid = c.companyid
-	where ist.itemployeeid = p_it_employee_id
-	--and ist.iscompleted = false
-	order by ist.scheduleddate;
-end;
-$$ language plpgsql;
+    details varchar(1000)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        ist.itsetuptaskid,
+        nh.newhireid,
+        nh.firstname || ' ' || nh.lastname,
+        st.setupname,
+        ist.scheduleddate,
+        ist.iscompleted,
+        c.companyname,
+        ist.details
+    FROM test.itsetuptasks ist
+    JOIN test.newhires nh ON ist.newhireid = nh.newhireid
+    JOIN test.setuptypes st ON ist.setuptypeid = st.setuptypeid
+    JOIN test.companies c ON nh.companyid = c.companyid
+    WHERE ist.itemployeeid = p_it_employee_id
+    ORDER BY ist.scheduleddate;
+END;
+$$ LANGUAGE plpgsql;
 
 -- get all setup tasks for a specific new hire
 create or replace function test.get_new_hire_setup_status(p_new_hire_id integer)

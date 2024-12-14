@@ -24,4 +24,5 @@ export interface PendingTask {
   isCompleted: boolean;
   companyName: string;
   newHireName: string;
+  details: string;
 }
