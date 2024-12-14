@@ -21,6 +21,7 @@ export interface PendingTask {
   setupType: string;
   scheduledDate: string;
   isOverdue: boolean;
+  isCompleted: boolean;
   companyName: string;
   newHireName: string;
 }

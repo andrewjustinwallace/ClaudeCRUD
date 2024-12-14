@@ -1,3 +1,5 @@
+using System.Diagnostics.Eventing.Reader;
+
 namespace FirstDay.API.Models.StoredProcedureModels;
 
 public class ITEmployeePendingTask
@@ -8,4 +10,5 @@ public class ITEmployeePendingTask
     public string SetupType { get; set; } = string.Empty;
     public DateTime ScheduledDate { get; set; }
     public string CompanyName { get; set; } = string.Empty;
+    public bool IsCompleted { get; set; }
 }

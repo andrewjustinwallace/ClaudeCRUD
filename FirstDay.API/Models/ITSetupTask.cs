@@ -7,6 +7,7 @@ namespace FirstDay.API.Models
         public string NewHireName { get; set; } = string.Empty;
         public string SetupType { get; set; } = string.Empty;
         public DateTime ScheduledDate { get; set; }
+        public bool IsCompleted { get; set; }
         public string CompanyName { get; set; } = string.Empty;
     }
 

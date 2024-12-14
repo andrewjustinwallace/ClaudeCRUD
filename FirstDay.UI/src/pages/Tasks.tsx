@@ -9,7 +9,7 @@ import { CompletionDialog } from '../components/tasks/CompletionDialog';
 import api from '../services/api';
 
 interface GroupedTasks {
-    [key: string]: (PendingTask & { isCompleted?: boolean })[];
+    [key: string]: PendingTask[];
 }
 
 const Tasks = () => {
@@ -97,7 +97,7 @@ const Tasks = () => {
                     {employeeId ? 'Employee Pending Tasks' : 'All Tasks'}
                 </h1>
                 <div className="text-center py-12">
-                    <p className="text-gray-500">No pending tasks found.</p>
+                    <p className="text-gray-500">No tasks found.</p>
                 </div>
             </div>
         );
@@ -109,7 +109,8 @@ const Tasks = () => {
         if (!acc[key]) {
             acc[key] = [];
         }
-        const isCompleted = completedTasks.has(task.taskId);
+        // Only use completedTasks Set to augment the API response if needed
+        const isCompleted = task.isCompleted || completedTasks.has(task.taskId);
         acc[key].push({ ...task, isCompleted });
         return acc;
     }, {});
@@ -117,7 +118,7 @@ const Tasks = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-semibold text-gray-900 mb-6">
-                {employeeId ? 'Employee Pending Tasks' : 'All Tasks'}
+                {employeeId ? 'Employee Tasks' : 'All Tasks'}
             </h1>
 
             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -198,23 +199,22 @@ const Tasks = () => {
                                                         </span>
                                                     </td>
                                                     <td className="py-2 text-center">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (!task.isCompleted) {
+                                                        {task.isCompleted ? (
+                                                            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
+                                                                Completed
+                                                            </span>
+                                                        ) : (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
                                                                     setSelectedTask(task);
                                                                     setIsCompletionDialogOpen(true);
-                                                                }
-                                                            }}
-                                                            className={`px-3 py-1 ${
-                                                                task.isCompleted
-                                                                    ? 'bg-gray-300 cursor-not-allowed'
-                                                                    : 'bg-blue-500 hover:bg-blue-600'
-                                                            } text-white rounded-md text-sm`}
-                                                            disabled={task.isCompleted}
-                                                        >
-                                                            {task.isCompleted ? 'Completed' : 'Pending'}
-                                                        </button>
+                                                                }}
+                                                                className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm"
+                                                            >
+                                                                Complete
+                                                            </button>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}

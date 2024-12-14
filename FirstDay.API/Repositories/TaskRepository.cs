@@ -67,7 +67,7 @@ namespace FirstDay.API.Repositories
             try
             {
                 return await connection.QuerySingleOrDefaultAsync<bool>(
-                    "SELECT test.update_task_completion(@TaskId, @ItEmployeeId, @NewHireId, @Notes)",
+                    "select * from test.update_task_completion(@TaskId, @ItEmployeeId, @NewHireId, @Notes)",
                     new { TaskId = request.TaskId, ItEmployeeId = request.ITEmployeeId, NewHireId = request.NewHireId, Notes = request.Notes });
             }
             catch

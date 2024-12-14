@@ -6,7 +6,8 @@ returns table (
     newhirename text,
     setuptype varchar(100),
     scheduleddate date,
-    companyname varchar(100)
+    companyname varchar(100),
+    iscompleted bool
 ) as $$
 begin
     return query
@@ -16,13 +17,14 @@ begin
 	    nh.firstname || ' ' || nh.lastname,
 	    st.setupname,
 	    ist.scheduleddate,
-	    c.companyname
+	    c.companyname,
+		ist.iscompleted
 	from test.itsetuptasks ist
 	join test.newhires nh on ist.newhireid = nh.newhireid
 	join test.setuptypes st on ist.setuptypeid = st.setuptypeid
 	join test.companies c on nh.companyid = c.companyid
 	where ist.itemployeeid = p_it_employee_id
-	and ist.iscompleted = false
+	--and ist.iscompleted = false
 	order by ist.scheduleddate;
 end;
 $$ language plpgsql;
@@ -166,6 +168,46 @@ begin
 end;
 $$ language plpgsql;
 
+-- Function to update task completion status
+CREATE OR REPLACE FUNCTION test.update_task_completion(
+    p_task_id INTEGER,
+    p_it_employee_id INTEGER,
+    p_new_hire_id INTEGER,
+    p_notes VARCHAR(500)
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_task_exists BOOLEAN;
+BEGIN
+    -- Verify the task exists and belongs to the specified IT employee and new hire
+    SELECT EXISTS (
+        SELECT 1 
+        FROM test.itsetuptasks 
+        WHERE itsetuptaskid = p_task_id 
+        AND itemployeeid = p_it_employee_id
+        AND newhireid = p_new_hire_id
+        AND iscompleted = FALSE
+    ) INTO v_task_exists;
+
+    IF NOT v_task_exists THEN
+        RETURN FALSE;
+    END IF;
+
+    -- Update the task
+    UPDATE test.itsetuptasks
+    SET 
+        iscompleted = TRUE,
+        completeddate = CURRENT_TIMESTAMP,
+        notes = p_notes,
+        modifieddate = CURRENT_TIMESTAMP
+    WHERE itsetuptaskid = p_task_id
+    AND itemployeeid = p_it_employee_id
+    AND newhireid = p_new_hire_id;
+
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
 -- example usage of the functions:
 /*
 select * from test.get_it_employee_pending_tasks(5);
@@ -174,6 +216,9 @@ select * from test.get_it_employee_workload();
 select * from test.get_todays_tasks();
 select * from test.get_company_onboarding_progress(1);
 select * from test.get_overdue_tasks(4);
+select * from test.update_task_completion(111, 5, 4, 'asdf')
+
+select * from test.itsetuptasks where itsetuptaskid = 111
 
 drop function test.get_new_hire_setup_status;
 drop function test.get_it_employee_pending_tasks;
