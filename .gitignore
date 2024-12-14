@@ -127,3 +127,4 @@ orleans.codegen.cs
 appsettings.Development.json
 appsettings.Local.json
 /FirstDay.UI/node_modules
+/FirstDay.UI/dist
