@@ -1,14 +1,16 @@
-import api from './api';
-import { WorkloadSummary } from '../types/workload';
+import api from "./api";
+import { ITEmployeeWorkload } from "../types/workload";
 
 export const workloadService = {
-    getWorkloadSummary: async (): Promise<WorkloadSummary> => {
-        const { data } = await api.get('/itemployee/workload');
-        return data;
-    },
+  getITEmployeeWorkload: async (): Promise<ITEmployeeWorkload[]> => {
+    const { data } = await api.get("/onboarding/itemployee/workload");
+    return data;
+  },
 
-    getEmployeeWorkload: async (employeeId: string) => {
-        const { data } = await api.get(`/itemployee/${employeeId}/workload`);
-        return data;
-    }
+  getPendingTasks: async (employeeId: number) => {
+    const { data } = await api.get(
+      `/onboarding/itemployee/${employeeId}/pendingtasks`
+    );
+    return data;
+  },
 };

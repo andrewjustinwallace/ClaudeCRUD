@@ -1,19 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { WorkloadSummary } from "../../../types/workload";
+import { ITEmployeeWorkload } from "../../../types/workload";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { workloadService } from "../../../services/workloadService";
 
 const WorkloadChart = () => {
-  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
 
-  const { data, isLoading, error } = useQuery<WorkloadSummary>({
+  const { data, isLoading, error } = useQuery<ITEmployeeWorkload[]>({
     queryKey: ["workload"],
-    queryFn: () => workloadService.getWorkloadSummary(),
+    queryFn: async () => {
+      try {
+        return await workloadService.getITEmployeeWorkload();
+      } catch (err) {
+        console.error("Workload fetch error:", err);
+        throw err;
+      }
+    },
     retry: 1,
-    onError: (error) => {
-      console.error('Workload fetch error:', error);
-    }
   });
 
   if (isLoading) {
@@ -39,6 +43,12 @@ const WorkloadChart = () => {
     );
   }
 
+  // Calculate summary statistics
+  const totalEmployees = data?.length ?? 0;
+  const totalTasks = data?.reduce((sum, emp) => sum + emp.totalTasks, 0) ?? 0;
+  const averageTasksPerEmployee =
+    totalEmployees > 0 ? totalTasks / totalEmployees : 0;
+
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="p-6">
@@ -51,19 +61,19 @@ const WorkloadChart = () => {
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm text-blue-600 mb-1">Total Employees</p>
             <p className="text-2xl font-semibold text-blue-900">
-              {data?.totalEmployees ?? 0}
+              {totalEmployees}
             </p>
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <p className="text-sm text-green-600 mb-1">Total Tasks</p>
             <p className="text-2xl font-semibold text-green-900">
-              {data?.totalTasks ?? 0}
+              {totalTasks}
             </p>
           </div>
           <div className="bg-purple-50 p-4 rounded-lg">
             <p className="text-sm text-purple-600 mb-1">Avg Tasks/Employee</p>
             <p className="text-2xl font-semibold text-purple-900">
-              {data?.averageTasksPerEmployee?.toFixed(1) ?? '0.0'}
+              {averageTasksPerEmployee.toFixed(1)}
             </p>
           </div>
         </div>
@@ -88,19 +98,21 @@ const WorkloadChart = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data?.employees?.map((employee) => (
+              {data?.map((employee) => (
                 <tr
-                  key={employee.employeeId}
+                  key={employee.itEmployeeId}
                   className={`hover:bg-gray-50 cursor-pointer ${
-                    selectedEmployee === employee.employeeId ? "bg-blue-50" : ""
+                    selectedEmployee === employee.itEmployeeId
+                      ? "bg-blue-50"
+                      : ""
                   }`}
-                  onClick={() => setSelectedEmployee(employee.employeeId)}
+                  onClick={() => setSelectedEmployee(employee.itEmployeeId)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {employee.name}
+                    {employee.itEmployeeName}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    {employee.assignedTasks}
+                    {employee.totalTasks}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
                     {employee.pendingTasks}

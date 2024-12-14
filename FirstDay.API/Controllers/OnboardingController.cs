@@ -15,14 +15,14 @@ public class OnboardingController : ControllerBase
         _onboardingService = onboardingService;
     }
 
-    [HttpGet("itemployee/{id}/pending-tasks")]
+    [HttpGet("itemployee/{id}/pendingtasks")]
     public async Task<ActionResult<IEnumerable<ITEmployeePendingTask>>> GetITEmployeePendingTasks(int id)
     {
         var tasks = await _onboardingService.GetITEmployeePendingTasksAsync(id);
         return Ok(tasks);
     }
 
-    [HttpGet("newhire/{id}/setup-status")]
+    [HttpGet("newhire/{id}/setupstatus")]
     public async Task<ActionResult<IEnumerable<NewHireSetupStatus>>> GetNewHireSetupStatus(int id)
     {
         var status = await _onboardingService.GetNewHireSetupStatusAsync(id);
@@ -43,7 +43,7 @@ public class OnboardingController : ControllerBase
         return Ok(tasks);
     }
 
-    [HttpGet("company/{id}/onboarding-progress")]
+    [HttpGet("company/{id}/onboardingprogress")]
     public async Task<ActionResult<IEnumerable<CompanyOnboardingProgress>>> GetCompanyOnboardingProgress(int id)
     {
         var progress = await _onboardingService.GetCompanyOnboardingProgressAsync(id);

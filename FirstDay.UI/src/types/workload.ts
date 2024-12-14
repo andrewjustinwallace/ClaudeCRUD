@@ -1,15 +1,16 @@
-export interface EmployeeWorkload {
-    employeeId: string;
-    name: string;
-    assignedTasks: number;
-    completedTasks: number;
-    pendingTasks: number;
-    overdueTasks: number;
+export interface ITEmployeeWorkload {
+  itEmployeeId: number;
+  itEmployeeName: string;
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+  overdueTasks: number;
 }
 
-export interface WorkloadSummary {
-    totalEmployees: number;
-    totalTasks: number;
-    averageTasksPerEmployee: number;
-    employees: EmployeeWorkload[];
+export interface ITEmployeePendingTask {
+  taskId: number;
+  newHireName: string;
+  setupTypeName: string;
+  dueDate: string;
+  isOverdue: boolean;
 }
