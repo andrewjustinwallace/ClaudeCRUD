@@ -127,6 +127,7 @@ UPDATE test.itsetuptasks SET modifieddate = CURRENT_TIMESTAMP;
 -- Add the details column
 ALTER TABLE test.itsetuptasks ADD COLUMN details VARCHAR(1000);
 
+
 -- Update existing records with dummy data
 UPDATE test.itsetuptasks
 SET details = CASE 
@@ -148,4 +149,26 @@ SET details = CASE
     ELSE 'Standard setup completed according to company policies.'
 END;
 
+-- Insert UserTypes
+INSERT INTO test.UserTypes (TypeName) VALUES 
+    ('Admin'),
+    ('IT Employee');
 
+-- Update existing IT Employees (set first employee as Admin, rest as IT Employee)
+UPDATE test.ITEmployees 
+SET UserTypeID = CASE 
+    WHEN ITEmployeeID = 1 THEN 1  -- Admin
+    ELSE 2                        -- IT Employee
+END;
+
+UPDATE test.ITEmployees 
+SET username = CASE 
+    WHEN ITEmployeeID = 1 THEN 'admin'
+    ELSE 'it'
+END;
+
+UPDATE test.ITEmployees 
+SET password = CASE 
+    WHEN ITEmployeeID = 1 THEN 'admin'
+    ELSE 'it'
+END;

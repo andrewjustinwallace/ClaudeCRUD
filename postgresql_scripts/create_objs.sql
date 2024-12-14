@@ -1,5 +1,10 @@
-
-
+-- Create UserTypes table
+CREATE TABLE test.UserTypes (
+    UserTypeID SERIAL PRIMARY KEY,
+    TypeName VARCHAR(50) NOT NULL UNIQUE,
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ModifiedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Create Companies table
 CREATE TABLE test.Companies (
@@ -112,3 +117,16 @@ JOIN test.SetupTypes st ON ist.SetupTypeID = st.SetupTypeID
 WHERE ist.IsCompleted = FALSE;
 
 
+-- Add UserType column to ITEmployees
+ALTER TABLE test.ITEmployees 
+ADD COLUMN UserTypeID INTEGER,
+ADD CONSTRAINT FK_ITEmployees_UserTypes 
+    FOREIGN KEY (UserTypeID) REFERENCES test.UserTypes(UserTypeID);
+    
+-- Add the user/pw columns
+ALTER TABLE test.itemployees ADD COLUMN username VARCHAR(1000);
+ALTER TABLE test.itemployees ADD COLUMN password VARCHAR(1000);
+
+-- Make UserTypeID NOT NULL after updating existing records
+ALTER TABLE test.ITEmployees 
+ALTER COLUMN UserTypeID SET NOT NULL;

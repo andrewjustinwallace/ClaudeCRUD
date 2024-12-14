@@ -209,6 +209,35 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create login function
+create or replace function test.authenticate_user(
+    p_username VARCHAR,
+    p_password VARCHAR
+)
+RETURNS TABLE (
+    authenticated BOOLEAN,
+    employeeid INTEGER,
+    firstname VARCHAR,
+    lastname VARCHAR,
+    usertype VARCHAR,
+    companyid INTEGER
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        TRUE as authenticated,
+        e.ITEmployeeID,
+        e.FirstName,
+        e.LastName,
+        ut.TypeName as user_type,
+        e.CompanyID
+    FROM test.ITEmployees e
+    JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
+    WHERE e.Username = p_username 
+    AND e.Password = p_password;  -- Note: In production, use proper password hashing
+END;
+$$ LANGUAGE plpgsql;
+
 -- example usage of the functions:
 /*
 select * from test.get_it_employee_pending_tasks(5);
@@ -218,8 +247,10 @@ select * from test.get_todays_tasks();
 select * from test.get_company_onboarding_progress(1);
 select * from test.get_overdue_tasks(4);
 select * from test.update_task_completion(111, 5, 4, 'asdf')
+select * from test.authenticate_user('it', 'it')
 
 select * from test.itsetuptasks where itsetuptaskid = 111
+select * from test.ITEmployees
 
 drop function test.get_new_hire_setup_status;
 drop function test.get_it_employee_pending_tasks;

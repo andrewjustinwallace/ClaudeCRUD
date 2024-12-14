@@ -1,10 +1,10 @@
+import { Fragment, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { workloadService } from '../services/workloadService';
 import { PendingTask } from '../types/tasks';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
 import { CompletionDialog } from '../components/tasks/CompletionDialog';
 import api from '../services/api';
 
@@ -214,9 +214,8 @@ const Tasks = () => {
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
                                             {groupTasks.map((task) => (
-                                                <>
+                                                <Fragment key={task.taskId}>
                                                     <tr 
-                                                        key={task.taskId}
                                                         onClick={(e) => toggleTaskDetails(task.taskId, e)}
                                                         className="cursor-pointer hover:bg-gray-50"
                                                     >
@@ -262,7 +261,7 @@ const Tasks = () => {
                                                         </td>
                                                     </tr>
                                                     {expandedTask === task.taskId && (
-                                                        <tr key={`${task.taskId}-details`}>
+                                                        <tr>
                                                             <td colSpan={5} className="bg-gray-50 px-4 py-3">
                                                                 <div className="text-sm text-gray-700">
                                                                     <h4 className="font-medium mb-2">Details:</h4>
@@ -271,7 +270,7 @@ const Tasks = () => {
                                                             </td>
                                                         </tr>
                                                     )}
-                                                </>
+                                                </Fragment>
                                             ))}
                                         </tbody>
                                     </table>

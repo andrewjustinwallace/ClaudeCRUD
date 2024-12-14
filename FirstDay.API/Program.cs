@@ -28,6 +28,7 @@ builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 // Register services
 builder.Services.AddScoped<IOnboardingService, OnboardingService>();
+builder.Services.AddTransient<IAuthService, AuthService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
