@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Company {
   companyId: number;
@@ -8,27 +8,41 @@ interface Company {
 
 export default function SelectCompany() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = user?.userType === "Admin";
 
   useEffect(() => {
     if (!user.authenticated) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-    
+
     if (user.companies?.length === 1) {
-      handleCompanySelect(user.companies[0].companyId);
+      if (isAdmin) {
+        navigate("/dashboard");
+        return;
+      }
+      handleCompanySelect(
+        user.companies[0].companyId,
+        user.companies[0].companyName
+      );
     }
   }, []);
 
-  const handleCompanySelect = (companyId: number) => {
+  const handleCompanySelect = (companyId: number, companyName: string) => {
     const updatedUser = {
       ...user,
-      selectedCompanyId: companyId
+      selectedCompanyId: companyId,
     };
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    localStorage.setItem("companyId", companyId.toString());
+    localStorage.setItem("companyName", companyName);
 
     // Always navigate to tasks for the selected company
+    if (isAdmin) {
+      navigate("/dashboard");
+      return;
+    }
     navigate(`/tasks/employee/${user.employeeId}?companyId=${companyId}`);
   };
 
@@ -36,8 +50,12 @@ export default function SelectCompany() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900">No Companies Available</h2>
-          <p className="mt-2 text-gray-600">You don't have access to any companies.</p>
+          <h2 className="text-xl font-semibold text-gray-900">
+            No Companies Available
+          </h2>
+          <p className="mt-2 text-gray-600">
+            You don't have access to any companies.
+          </p>
         </div>
       </div>
     );
@@ -54,20 +72,30 @@ export default function SelectCompany() {
             Choose a company to view your tasks
           </p>
         </div>
-        
+
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="divide-y divide-gray-200">
             {user.companies.map((company: Company) => (
               <button
                 key={company.companyId}
-                onClick={() => handleCompanySelect(company.companyId)}
+                onClick={() =>
+                  handleCompanySelect(company.companyId, company.companyName)
+                }
                 className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors duration-150"
               >
                 <span className="text-lg font-medium text-gray-900">
                   {company.companyName}
                 </span>
                 <span className="text-indigo-600">
-                  <svg className="h-5 w-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
                     <path d="M9 5l7 7-7 7" />
                   </svg>
                 </span>

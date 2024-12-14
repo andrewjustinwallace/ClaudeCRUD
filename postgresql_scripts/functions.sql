@@ -63,7 +63,7 @@ end;
 $$ language plpgsql;
 
 -- get workload summary for it employees
-create or replace function test.get_it_employee_workload()
+create or replace function test.get_it_employee_workload(p_company_Id integer)
 returns table (
     itemployeeid integer,
     itemployeename text,
@@ -87,6 +87,7 @@ begin
     left join test.itsetuptasks ist on ite.itemployeeid = ist.itemployeeid
 	JOIN test.ITEmployeeCompanies iec ON ist.ITEmployeeID = iec.ITEmployeeID
     left join test.companies c on iec.companyid = c.companyid
+	where c.companyId = p_company_Id
     group by ite.itemployeeid, ite.firstname, ite.lastname, c.companyname, c.companyid
     order by pendingtasks desc;
 end;
@@ -294,3 +295,20 @@ drop function test.get_todays_tasks;
 drop function test.get_company_onboarding_progress;
 drop function test.get_overdue_tasks;
 */
+
+select 
+		ite.itemployeeid,
+        ite.firstname || ' ' || ite.lastname,
+        count(case when ist.iscompleted = false then 1 end),
+        count(case when ist.iscompleted = true then 1 end),
+        count(*),
+        c.companyname,
+		c.companyid
+    from test.itemployees ite
+    left join test.itsetuptasks ist on ite.itemployeeid = ist.itemployeeid
+	JOIN test.ITEmployeeCompanies iec ON ist.ITEmployeeID = iec.ITEmployeeID
+    left join test.companies c on iec.companyid = c.companyid
+    group by ite.itemployeeid, ite.firstname, ite.lastname, c.companyname, c.companyid
+    order by ite.itemployeeid
+    
+    update test.itemployees set username = 'it2', password = 'it2' where itemployeeid  = 6

@@ -29,10 +29,10 @@ public class OnboardingController : ControllerBase
         return Ok(status);
     }
 
-    [HttpGet("itemployee/workload")]
-    public async Task<ActionResult<IEnumerable<ITEmployeeWorkload>>> GetITEmployeeWorkload()
+    [HttpGet("itemployee/{companyId}/workload")]
+    public async Task<ActionResult<IEnumerable<ITEmployeeWorkload>>> GetITEmployeeWorkload(int companyId)
     {
-        var workload = await _onboardingService.GetITEmployeeWorkloadAsync();
+        var workload = await _onboardingService.GetITEmployeeWorkloadAsync(companyId);
         return Ok(workload);
     }
 

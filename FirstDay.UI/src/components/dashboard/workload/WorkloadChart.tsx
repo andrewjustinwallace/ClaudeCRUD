@@ -20,7 +20,8 @@ const WorkloadChart = () => {
     retry: 1,
   });
 
-  const handleEmployeeSelect = (employeeId: number) => {
+  const handleEmployeeSelect = (employeeId: number, employeeName: string) => {
+    localStorage.setItem("employeeName", employeeName);
     navigate(`/tasks/employee/${employeeId}`);
   };
 
@@ -88,7 +89,7 @@ const WorkloadChart = () => {
             <thead>
               <tr>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Employee
+                  IT Person
                 </th>
                 <th className="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Assigned
@@ -105,7 +106,12 @@ const WorkloadChart = () => {
               {data?.map((employee) => (
                 <tr
                   key={employee.itEmployeeId}
-                  onClick={() => handleEmployeeSelect(employee.itEmployeeId)}
+                  onClick={() =>
+                    handleEmployeeSelect(
+                      employee.itEmployeeId,
+                      employee.itEmployeeName
+                    )
+                  }
                   className="hover:bg-gray-50 cursor-pointer transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

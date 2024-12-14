@@ -16,7 +16,9 @@ export default function Login() {
       const response = await login(username, password);
       if (response.authenticated) {
         // Store user info in localStorage
+        const employeeName = response.firstName + " " + response.lastName;
         localStorage.setItem("user", JSON.stringify(response));
+        localStorage.setItem("employeeName", employeeName);
 
         // If user has multiple companies, redirect to company selection
         if (response.companies?.length > 1) {
@@ -25,10 +27,10 @@ export default function Login() {
           // If only one company, set it and redirect based on user type
           const userWithCompany = {
             ...response,
-            selectedCompanyId: response.companies[0].companyId
+            selectedCompanyId: response.companies[0].companyId,
           };
           localStorage.setItem("user", JSON.stringify(userWithCompany));
-          
+
           if (response.userType === "Admin") {
             navigate("/dashboard");
           } else {

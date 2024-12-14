@@ -31,11 +31,12 @@ namespace FirstDay.API.Repositories
                 new { NewHireId = newHireId });
         }
 
-        public async Task<IEnumerable<ITEmployeeWorkload>> GetITEmployeeWorkloadAsync()
+        public async Task<IEnumerable<ITEmployeeWorkload>> GetITEmployeeWorkloadAsync(int companyId)
         {
             using var connection = new NpgsqlConnection(_connectionString);
             return await connection.QueryAsync<ITEmployeeWorkload>(
-                "SELECT * FROM test.get_it_employee_workload()");
+                "SELECT * FROM test.get_it_employee_workload(@CompanyId)",
+                new { CompanyId = companyId });
         }
 
         public async Task<IEnumerable<TodayTask>> GetTodaysTasksAsync()

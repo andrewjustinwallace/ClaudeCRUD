@@ -26,7 +26,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isLoginPage = location.pathname === "/login";
   const isSelectCompanyPage = location.pathname === "/select-company";
   const showNavigation = !isLoginPage && !isSelectCompanyPage;
@@ -37,13 +36,13 @@ function AppContent() {
       <main className={`${showNavigation ? "pt-4" : ""}`}>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route 
-            path="/select-company" 
+          <Route
+            path="/select-company"
             element={
               <PrivateRoute>
                 <SelectCompany />
               </PrivateRoute>
-            } 
+            }
           />
           <Route
             path="/dashboard"
