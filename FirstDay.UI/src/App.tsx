@@ -5,7 +5,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
@@ -26,13 +26,14 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 function AppContent() {
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const isLoginPage = location.pathname === '/login';
-  const showNavigation = !isLoginPage && user.userType === 'Admin';
+  const isLoginPage = location.pathname === "/login";
+  const showAdminNavigation = !isLoginPage && user.userType === "Admin";
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {showNavigation && <Navigation />}
-      <main className={`${showNavigation ? 'pt-4' : ''}`}>
+      {/* {showNavigation && <Navigation />} */}
+      <Navigation />
+      <main className={`${showAdminNavigation ? "pt-4" : ""}`}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
