@@ -1,89 +1,213 @@
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/data-table';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { adminService } from '@/services/adminService';
-import type { NewHire } from '@/types';
+import { NewHire } from '@/types';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  ChartBarIcon,
+  BuildingOfficeIcon,
+  CalendarIcon
+} from '@heroicons/react/24/outline';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function NewHires() {
-  const navigate = useNavigate();
-  const [hires, setHires] = useState<NewHire[]>([]);
+  const [newHires, setNewHires] = useState<NewHire[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadHires = async () => {
-      try {
-        const data = await adminService.getActiveNewHires();
-        setHires(data);
-      } catch (error) {
-        console.error('Error loading new hires:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadHires();
+    loadNewHires();
   }, []);
 
-  const columns = [
-    {
-      accessorKey: 'fullName',
-      header: 'Name',
-      cell: ({ row }: { row: { original: NewHire } }) => 
-        `${row.original.firstName} ${row.original.lastName}`,
-    },
-    {
-      accessorKey: 'email',
-      header: 'Email',
-    },
-    {
-      accessorKey: 'companyName',
-      header: 'Company',
-    },
-    {
-      accessorKey: 'actions',
-      header: 'Actions',
-      cell: ({ row }: { row: { original: NewHire } }) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/newhires/${row.original.newHireId}/edit`)}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/newhires/${row.original.newHireId}/progress`)}
-          >
-            Progress
-          </Button>
-        </div>
-      ),
-    },
-  ];
+  const loadNewHires = async () => {
+    try {
+      setLoading(true);
+      const data = await adminService.getActiveNewHires();
+      setNewHires(data);
+    } catch (error) {
+      console.error('Error loading new hires:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const filteredNewHires = newHires.filter(newHire => {
+    const matchesSearch = `${newHire.firstName} ${newHire.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      newHire.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCompany = selectedCompany === 'all' || newHire.companyId.toString() === selectedCompany;
+    return matchesSearch && matchesCompany;
+  });
+
+  const companies = [...new Set(newHires.map(nh => ({ id: nh.companyId, name: nh.companyName })))];
+
+  const getDaysUntilStart = (hireDate: string) => {
+    const today = new Date();
+    const start = new Date(hireDate);
+    const diffTime = start.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>New Hires</CardTitle>
-        <Button 
-          variant="outline" 
-          size="default" 
-          onClick={() => navigate('/newhires/create')}
-        >
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">New Hires</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage new hire onboarding and setup progress
+          </p>
+        </div>
+        <Button onClick={() => navigate('/newhires/create')}>
+          <PlusIcon className="h-4 w-4 mr-2" />
           Add New Hire
         </Button>
-      </CardHeader>
-      <CardContent>
-        <DataTable columns={columns} data={hires} />
-      </CardContent>
-    </Card>
+      </div>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex gap-4 items-center">
+            <div className="w-64">
+              <Input
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Select
+              value={selectedCompany}
+              onValueChange={setSelectedCompany}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by company" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Companies</SelectItem>
+                {companies.map(company => (
+                  <SelectItem key={company.id} value={company.id.toString()}>
+                    {company.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-x-2">
+            <Button variant="outline">Export</Button>
+            <Button variant="outline">Filter</Button>
+          </div>
+        </div>
+
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Hire Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Progress</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    Loading new hires...
+                  </TableCell>
+                </TableRow>
+              ) : filteredNewHires.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    No new hires found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredNewHires.map((newHire) => {
+                  const daysUntilStart = getDaysUntilStart(newHire.hireDate);
+                  return (
+                    <TableRow key={newHire.newHireId}>
+                      <TableCell className="font-medium">
+                        {newHire.firstName} {newHire.lastName}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <BuildingOfficeIcon className="h-4 w-4 mr-1 text-gray-500" />
+                          {newHire.companyName}
+                        </div>
+                      </TableCell>
+                      <TableCell>{newHire.email}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center text-gray-600">
+                          <CalendarIcon className="h-4 w-4 mr-1" />
+                          {new Date(newHire.hireDate).toLocaleDateString()}
+                          {daysUntilStart > 0 && (
+                            <Badge variant="outline" className="ml-2">
+                              In {daysUntilStart} days
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={newHire.isActive ? "default" : "secondary"}>
+                          {newHire.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          className="h-8"
+                          onClick={() => navigate(`/newhires/${newHire.newHireId}/progress`)}
+                        >
+                          <ChartBarIcon className="h-4 w-4 mr-1" />
+                          View Progress
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => navigate(`/newhires/${newHire.newHireId}/edit`)}
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
+    </div>
   );
 }

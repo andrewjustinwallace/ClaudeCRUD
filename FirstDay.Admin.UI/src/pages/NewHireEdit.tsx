@@ -1,77 +1,66 @@
-import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { NewHireForm } from '@/components/NewHireForm';
+import { useParams, useNavigate } from 'react-router-dom';
 import { adminService } from '@/services/adminService';
+import { NewHireForm } from '@/components/NewHireForm';
 import type { NewHireFormData } from '@/types';
-import { useToast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function NewHireEdit() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { id } = useParams<{ id: string }>();
-  const [hire, setHire] = useState<NewHireFormData>();
+  const [initialData, setInitialData] = useState<Partial<NewHireFormData> | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadNewHire = async () => {
-      if (id) {
-        try {
-          const response = await adminService.getActiveNewHires();
-          const found = response.find(h => h.newHireId === parseInt(id));
-          if (found) {
-            const formData: NewHireFormData = {
-              firstName: found.firstName,
-              lastName: found.lastName,
-              email: found.email,
-              hireDate: found.hireDate,
-              company: found.companyId.toString(),
-              department: ''
-            };
-            setHire(formData);
-          }
-        } catch (error) {
-          console.error('Error loading new hire:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load new hire data",
-            variant: "destructive"
-          });
-        }
+      if (!id) return;
+      try {
+        const data = await adminService.getNewHireById(parseInt(id));
+        setInitialData({
+          newHireId: data.newHireId,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          companyId: data.companyId,
+          hireDate: data.hireDate.split('T')[0], // Format date for input
+          isActive: data.isActive
+        });
+      } catch (error) {
+        console.error('Error loading new hire:', error);
+      } finally {
+        setLoading(false);
       }
     };
-    loadNewHire();
-  }, [id, toast]);
 
-  const handleSubmit = async (formData: NewHireFormData) => {
+    loadNewHire();
+  }, [id]);
+
+  const handleSubmit = async (data: NewHireFormData) => {
     try {
-      await adminService.upsertNewHire({
-        ...formData,
-        newHireId: parseInt(id || '0')
-      });
-      toast({
-        title: "Success",
-        description: "New hire has been updated successfully"
-      });
+      await adminService.updateNewHire(data);
       navigate('/newhires');
     } catch (error) {
       console.error('Error updating new hire:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update new hire",
-        variant: "destructive"
-      });
     }
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        {id ? 'Edit New Hire' : 'Add New Hire'}
-      </h1>
-      {hire ? (
-        <NewHireForm initialData={hire} onSubmit={handleSubmit} />
-      ) : (
-        <div>Loading...</div>
-      )}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Edit New Hire</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {initialData && (
+          <NewHireForm
+            initialData={initialData}
+            onSubmit={handleSubmit}
+          />
+        )}
+      </CardContent>
+    </Card>
   );
 }

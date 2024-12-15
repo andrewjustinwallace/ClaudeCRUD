@@ -1,23 +1,57 @@
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import type { NewHireFormData } from '@/types';
+import { useState, useEffect } from 'react';
+import { adminService } from '@/services/adminService';
+import type { Company } from '@/types';
 
 interface NewHireFormProps {
-  initialData?: NewHireFormData | null;
+  initialData?: Partial<NewHireFormData>;
   onSubmit: (data: NewHireFormData) => Promise<void>;
 }
 
 export function NewHireForm({ initialData, onSubmit }: NewHireFormProps) {
+  const [companies, setCompanies] = useState<Company[]>([]);
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    setValue,
+    formState: { errors },
+    watch
   } = useForm<NewHireFormData>({
-    defaultValues: initialData || undefined
+    defaultValues: {
+      isActive: true,
+      ...initialData
+    }
   });
+
+  useEffect(() => {
+    const loadCompanies = async () => {
+      try {
+        const data = await adminService.getActiveCompanies();
+        setCompanies(data);
+      } catch (error) {
+        console.error('Error loading companies:', error);
+      }
+    };
+    loadCompanies();
+  }, []);
+
+  // Handle company selection separately since we're using a custom Select component
+  const handleCompanyChange = (value: string) => {
+    setValue('companyId', parseInt(value));
+  };
+
+  const selectedCompanyId = watch('companyId');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -25,18 +59,22 @@ export function NewHireForm({ initialData, onSubmit }: NewHireFormProps) {
         <Label htmlFor="firstName">First Name</Label>
         <Input
           id="firstName"
-          error={errors.firstName?.message}
           {...register('firstName', { required: 'First name is required' })}
         />
+        {errors.firstName?.message && (
+          <span className="text-sm text-red-500">{errors.firstName.message}</span>
+        )}
       </div>
 
       <div>
         <Label htmlFor="lastName">Last Name</Label>
         <Input
           id="lastName"
-          error={errors.lastName?.message}
           {...register('lastName', { required: 'Last name is required' })}
         />
+        {errors.lastName?.message && (
+          <span className="text-sm text-red-500">{errors.lastName.message}</span>
+        )}
       </div>
 
       <div>
@@ -44,7 +82,6 @@ export function NewHireForm({ initialData, onSubmit }: NewHireFormProps) {
         <Input
           id="email"
           type="email"
-          error={errors.email?.message}
           {...register('email', {
             required: 'Email is required',
             pattern: {
@@ -53,6 +90,9 @@ export function NewHireForm({ initialData, onSubmit }: NewHireFormProps) {
             }
           })}
         />
+        {errors.email?.message && (
+          <span className="text-sm text-red-500">{errors.email.message}</span>
+        )}
       </div>
 
       <div>
@@ -60,38 +100,42 @@ export function NewHireForm({ initialData, onSubmit }: NewHireFormProps) {
         <Input
           id="hireDate"
           type="date"
-          error={errors.hireDate?.message}
           {...register('hireDate', { required: 'Hire date is required' })}
         />
-      </div>
-
-      <div>
-        <Label htmlFor="company">Company</Label>
-        <Select
-          {...register('company', { required: 'Company is required' })}
-        >
-          <option value="">Select a company...</option>
-          {/* Add company options dynamically */}
-        </Select>
-        {errors.company?.message && (
-          <span className="text-sm text-red-500">{errors.company.message}</span>
+        {errors.hireDate?.message && (
+          <span className="text-sm text-red-500">{errors.hireDate.message}</span>
         )}
       </div>
 
       <div>
-        <Label htmlFor="department">Department</Label>
+        <Label htmlFor="companyId">Company</Label>
         <Select
-          {...register('department', { required: 'Department is required' })}
+          value={selectedCompanyId?.toString()}
+          onValueChange={handleCompanyChange}
         >
-          <option value="">Select a department...</option>
-          {/* Add department options dynamically */}
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a company..." />
+          </SelectTrigger>
+          <SelectContent>
+            {companies.map((company) => (
+              <SelectItem key={company.companyId} value={company.companyId.toString()}>
+                {company.companyName}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
-        {errors.department?.message && (
-          <span className="text-sm text-red-500">{errors.department.message}</span>
+        {errors.companyId?.message && (
+          <span className="text-sm text-red-500">{errors.companyId.message}</span>
         )}
       </div>
 
-      <Button type="submit">Submit</Button>
+      <input type="hidden" {...register('isActive')} />
+
+      <div className="pt-4">
+        <Button type="submit">
+          {initialData?.newHireId ? 'Update New Hire' : 'Create New Hire'}
+        </Button>
+      </div>
     </form>
   );
 }

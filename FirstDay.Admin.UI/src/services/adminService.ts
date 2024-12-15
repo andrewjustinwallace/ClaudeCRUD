@@ -57,6 +57,8 @@ export interface AdminServiceInterface {
   getActiveNewHires(): Promise<NewHire[]>;
   getCompanyStatistics(): Promise<CompanyStatistics>;
   upsertNewHire(newHire: Partial<NewHireFormData> & { newHireId?: number }): Promise<number>;
+  getNewHireById(id: number): Promise<NewHire>;
+  updateNewHire(data: NewHireFormData): Promise<void>;
 }
 
 class AdminService implements AdminServiceInterface {
@@ -145,6 +147,15 @@ class AdminService implements AdminServiceInterface {
   ): Promise<number> {
     const response = await axiosInstance.post(`/newhire`, newHire);
     return response.data;
+  }
+
+  async getNewHireById(id: number): Promise<NewHire> {
+    const response = await axiosInstance.get(`/newhire/${id}`);
+    return response.data;
+  }
+
+  async updateNewHire(data: NewHireFormData): Promise<void> {
+    await axiosInstance.put(`/newhire/${data.newHireId}`, data);
   }
 }
 
