@@ -1,3 +1,28 @@
+-- example usage of the functions:
+/*
+select * from test.get_it_employee_pending_tasks(5);
+select * from test.get_new_hire_setup_status(1);
+select * from test.get_it_employee_workload();
+select * from test.get_todays_tasks();
+select * from test.get_company_onboarding_progress(1);
+select * from test.get_overdue_tasks(4);
+select * from test.update_task_completion(111, 5, 4, 'asdf')
+select * from test.authenticate_user('it', 'it')
+
+select * from test.itsetuptasks where itsetuptaskid = 111
+select * from test.ITEmployees
+
+drop function test.get_new_hire_setup_status;
+drop function test.get_it_employee_pending_tasks;
+drop function test.get_it_employee_workload;
+drop function test.get_todays_tasks;
+drop function test.get_company_onboarding_progress;
+drop function test.get_overdue_tasks;
+*/
+
+
+
+
 -- get all pending tasks for a specific it employee
 CREATE OR REPLACE FUNCTION test.get_it_employee_pending_tasks(
     p_it_employee_id integer,
@@ -273,30 +298,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
--- example usage of the functions:
-/*
-select * from test.get_it_employee_pending_tasks(5);
-select * from test.get_new_hire_setup_status(1);
-select * from test.get_it_employee_workload();
-select * from test.get_todays_tasks();
-select * from test.get_company_onboarding_progress(1);
-select * from test.get_overdue_tasks(4);
-select * from test.update_task_completion(111, 5, 4, 'asdf')
-select * from test.authenticate_user('it', 'it')
-
-select * from test.itsetuptasks where itsetuptaskid = 111
-select * from test.ITEmployees
-
-drop function test.get_new_hire_setup_status;
-drop function test.get_it_employee_pending_tasks;
-drop function test.get_it_employee_workload;
-drop function test.get_todays_tasks;
-drop function test.get_company_onboarding_progress;
-drop function test.get_overdue_tasks;
-*/
-
--- Drop functions if they exist to avoid conflicts
 
 -- UserType Management Functions
 CREATE OR REPLACE FUNCTION test.upsert_user_type(

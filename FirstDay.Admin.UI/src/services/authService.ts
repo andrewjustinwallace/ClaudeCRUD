@@ -1,32 +1,51 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = import.meta.env.VITE_API_URL;
+export interface Company {
+    companyId: number;
+    companyName: string;
+}
 
 export interface LoginResponse {
-  authenticated: boolean;
-  employeeId: number;
-  firstName: string;
-  lastName: string;
-  userType: string;
+    authenticated: boolean;
+    employeeId: number;
+    firstName: string;
+    lastName: string;
+    userType: string;
+    token: string;
+    companies: Company[];
+}
+
+export interface User extends LoginResponse {
+    selectedCompanyId?: number;
 }
 
 export async function login(username: string, password: string): Promise<LoginResponse> {
-  const response = await axios.post(`${API_URL}/auth/login`, {
-    username,
-    password
-  });
-  return response.data;
+    // Adding explicit POST method and headers
+    const response = await api.post('/auth/login', 
+        {
+            username,
+            password
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+    return response.data;
 }
 
-export function logout(): void {
-  localStorage.removeItem('user');
+export async function logout(): Promise<void> {
+    localStorage.removeItem('adminUser');
+    localStorage.removeItem('adminEmployeeName');
 }
 
-export function getCurrentUser(): LoginResponse | null {
-  const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
-}
-
-export function isAuthenticated(): boolean {
-  return !!getCurrentUser();
+export function getCurrentUser(): User | null {
+    const userStr = localStorage.getItem('adminUser');
+    if (!userStr) return null;
+    try {
+        return JSON.parse(userStr) as User;
+    } catch {
+        return null;
+    }
 }
