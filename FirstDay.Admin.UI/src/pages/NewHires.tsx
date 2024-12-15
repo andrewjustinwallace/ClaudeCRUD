@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { adminService } from '@/services/adminService';
 import { NewHire } from '@/types';
 import { Card } from '@/components/ui/card';
@@ -45,7 +45,25 @@ export default function NewHires() {
     try {
       setLoading(true);
       const data = await adminService.getActiveNewHires();
-      setNewHires(data);
+      console.log('Raw new hires data:', data);
+      
+      // Validate and ensure unique IDs
+      const idSet = new Set();
+      const validatedData = data.map((hire, index) => {
+        if (!hire.newHireId) {
+          console.warn(`New hire missing ID, using index:`, hire);
+          return { ...hire, newHireId: `temp-${index}` };
+        }
+        if (idSet.has(hire.newHireId)) {
+          console.warn(`Duplicate new hire ID found:`, hire.newHireId);
+          return { ...hire, newHireId: `${hire.newHireId}-${index}` };
+        }
+        idSet.add(hire.newHireId);
+        return hire;
+      });
+
+      console.log('Validated new hires data:', validatedData);
+      setNewHires(validatedData);
     } catch (error) {
       console.error('Error loading new hires:', error);
     } finally {
@@ -53,14 +71,31 @@ export default function NewHires() {
     }
   };
 
-  const filteredNewHires = newHires.filter(newHire => {
-    const matchesSearch = `${newHire.firstName} ${newHire.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      newHire.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCompany = selectedCompany === 'all' || newHire.companyId.toString() === selectedCompany;
-    return matchesSearch && matchesCompany;
-  });
+  const uniqueCompanies = useMemo(() => {
+    console.log('Generating unique companies list');
+    const companyMap = new Map();
+    newHires.forEach(nh => {
+      if (!companyMap.has(nh.companyId)) {
+        companyMap.set(nh.companyId, {
+          id: nh.companyId,
+          name: nh.companyName
+        });
+      }
+    });
+    const companies = Array.from(companyMap.values());
+    companies.sort((a, b) => a.name.localeCompare(b.name));
+    console.log('Unique companies:', companies);
+    return companies;
+  }, [newHires]);
 
-  const companies = [...new Set(newHires.map(nh => ({ id: nh.companyId, name: nh.companyName })))];
+  const filteredNewHires = useMemo(() => {
+    return newHires.filter(newHire => {
+      const matchesSearch = `${newHire.firstName} ${newHire.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        newHire.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCompany = selectedCompany === 'all' || newHire.companyId.toString() === selectedCompany;
+      return matchesSearch && matchesCompany;
+    });
+  }, [newHires, searchQuery, selectedCompany]);
 
   const getDaysUntilStart = (hireDate: string) => {
     const today = new Date();
@@ -103,9 +138,14 @@ export default function NewHires() {
                 <SelectValue placeholder="Filter by company" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Companies</SelectItem>
-                {companies.map(company => (
-                  <SelectItem key={company.id} value={company.id.toString()}>
+                <SelectItem key="company-all" value="all">
+                  All Companies
+                </SelectItem>
+                {uniqueCompanies.map(company => (
+                  <SelectItem 
+                    key={`company-${company.id}-${company.name}`} 
+                    value={company.id.toString()}
+                  >
                     {company.name}
                   </SelectItem>
                 ))}
@@ -145,10 +185,13 @@ export default function NewHires() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredNewHires.map((newHire) => {
+                filteredNewHires.map((newHire, index) => {
                   const daysUntilStart = getDaysUntilStart(newHire.hireDate);
+                  const uniqueKey = `newhire-${newHire.newHireId}-${index}`;
+                  console.log('Rendering row with key:', uniqueKey, 'for new hire:', newHire);
+                  
                   return (
-                    <TableRow key={newHire.newHireId}>
+                    <TableRow key={uniqueKey}>
                       <TableCell className="font-medium">
                         {newHire.firstName} {newHire.lastName}
                       </TableCell>

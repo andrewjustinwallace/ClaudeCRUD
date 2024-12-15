@@ -28,6 +28,9 @@ export default function Companies() {
     try {
       setLoading(true);
       const data = await adminService.getActiveCompanies();
+      console.log('Raw API response:', data);
+      
+      // Set the companies directly without filtering
       setCompanies(data);
     } catch (error) {
       console.error('Error loading companies:', error);
@@ -39,6 +42,8 @@ export default function Companies() {
   const filteredCompanies = companies.filter(company =>
     company.companyName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  console.log('Filtered companies:', filteredCompanies);
 
   return (
     <div className="space-y-6">
@@ -96,8 +101,8 @@ export default function Companies() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredCompanies.map((company) => (
-                  <TableRow key={company.companyId}>
+                filteredCompanies.map((company, index) => (
+                  <TableRow key={`${company.companyId}-${index}`}>
                     <TableCell className="font-medium">
                       {company.companyName}
                     </TableCell>

@@ -37,4 +37,10 @@ public interface IAdminService
     Task<IEnumerable<NewHire>> GetNewHiresByCompanyAsync(int companyId);
     Task<IEnumerable<NewHireSetupStatus>> GetNewHireSetupStatusAsync(int? companyId);
     Task<bool> CompleteNewHireSetupAsync(int id);
+
+    Task<IEnumerable<ITEmployeeDTO>> GetITEmployeesAsync();
+    Task<ITEmployeeDTO?> GetITEmployeeByIdAsync(int id);
+    Task<int> UpsertITEmployeeAsync(ITEmployeeDTO employeeDto);
+    Task<bool> AssignCompanyToEmployeeAsync(int companyId, int employeeId);
+    Task<bool> RemoveCompanyFromEmployeeAsync(int companyId, int employeeId);
 }

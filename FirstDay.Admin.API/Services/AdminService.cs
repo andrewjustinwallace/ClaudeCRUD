@@ -140,7 +140,7 @@ public class AdminService : IAdminService
     {
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QueryAsync<NewHire>(
-            "SELECT * FROM test.get_active_new_hires()");
+            "SELECT * FROM test.get_new_hires()");
     }
 
     public async Task<NewHire?> GetNewHireByIdAsync(int id)
@@ -219,5 +219,41 @@ public class AdminService : IAdminService
         return await connection.QuerySingleAsync<bool>(
             "SELECT test.complete_new_hire_setup(@NewHireId)",
             new { NewHireId = id });
+    }
+
+    public async Task<IEnumerable<ITEmployeeDTO>> GetITEmployeesAsync()
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QueryAsync<ITEmployeeDTO>(
+            "SELECT * FROM test.get_it_employees()");
+    }
+
+    public async Task<ITEmployeeDTO?> GetITEmployeeByIdAsync(int id)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleOrDefaultAsync<ITEmployeeDTO>(
+            "SELECT * FROM test.get_it_employee(@ITEmployeeId)",
+            new { ITEmployeeId = id });
+    }
+
+    public async Task<int> UpsertITEmployeeAsync(ITEmployeeDTO employeeDto)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleOrDefaultAsync<int>(
+            "SELECT * FROM test.get_active_it_employees()");
+    }
+
+    public async Task<bool> AssignCompanyToEmployeeAsync(int companyId, int employeeId)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleOrDefaultAsync<bool>(
+            "SELECT * FROM test.get_active_it_employees()");
+    }
+
+    public async Task<bool> RemoveCompanyFromEmployeeAsync(int companyId, int employeeId)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleOrDefaultAsync<bool>(
+            "SELECT * FROM test.get_active_it_employees()");
     }
 }

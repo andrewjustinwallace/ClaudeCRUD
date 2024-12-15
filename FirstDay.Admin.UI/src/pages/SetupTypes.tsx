@@ -35,7 +35,25 @@ export default function SetupTypes() {
     try {
       setLoading(true);
       const data = await adminService.getActiveSetupTypes();
-      setSetupTypes(data);
+      console.log('Raw setup types data:', data);
+      
+      // Validate and ensure unique IDs
+      const idSet = new Set();
+      const validatedData = data.map((setup, index) => {
+        if (!setup.setupTypeId) {
+          console.warn(`Setup type missing ID, using index:`, setup);
+          return { ...setup, setupTypeId: `temp-${index}` };
+        }
+        if (idSet.has(setup.setupTypeId)) {
+          console.warn(`Duplicate setup type ID found:`, setup.setupTypeId);
+          return { ...setup, setupTypeId: `${setup.setupTypeId}-${index}` };
+        }
+        idSet.add(setup.setupTypeId);
+        return setup;
+      });
+
+      console.log('Validated setup types data:', validatedData);
+      setSetupTypes(validatedData);
     } catch (error) {
       console.error('Error loading setup types:', error);
     } finally {
@@ -112,42 +130,47 @@ export default function SetupTypes() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredSetupTypes.map((setupType) => (
-                  <TableRow key={setupType.setupTypeId}>
-                    <TableCell className="font-medium">
-                      {setupType.setupName}
-                    </TableCell>
-                    <TableCell className="max-w-md truncate">
-                      {setupType.description}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-gray-600">
-                        <ClockIcon className="h-4 w-4 mr-1" />
-                        {formatDuration(setupType.estimatedDurationMinutes)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={setupType.isActive ? "default" : "secondary"}>
-                        {setupType.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={() => navigate(`/setuptypes/${setupType.setupTypeId}`)}
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <TrashIcon className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                filteredSetupTypes.map((setupType, index) => {
+                  const uniqueKey = `setuptype-${setupType.setupTypeId}-${index}`;
+                  console.log('Rendering row with key:', uniqueKey, 'for setup type:', setupType);
+                  
+                  return (
+                    <TableRow key={uniqueKey}>
+                      <TableCell className="font-medium">
+                        {setupType.setupName}
+                      </TableCell>
+                      <TableCell className="max-w-md truncate">
+                        {setupType.description}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center text-gray-600">
+                          <ClockIcon className="h-4 w-4 mr-1" />
+                          {formatDuration(setupType.estimatedDurationMinutes)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={setupType.isActive ? "default" : "secondary"}>
+                          {setupType.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => navigate(`/setuptypes/${setupType.setupTypeId}`)}
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

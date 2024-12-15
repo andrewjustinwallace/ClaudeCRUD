@@ -18,6 +18,10 @@ drop function test.get_it_employee_workload;
 drop function test.get_todays_tasks;
 drop function test.get_company_onboarding_progress;
 drop function test.get_overdue_tasks;
+
+update test.itemployees set username = 'testadminuser', password = 'test123test' where itemployeeid = 1
+SELECT * FROM test.get_active_companies()
+SELECT * FROM test.get_it_employees()
 */
 
 
@@ -631,23 +635,25 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Monitoring Functions
-CREATE OR REPLACE FUNCTION test.get_active_companies()
+
+CREATE OR replace FUNCTION test.get_active_companies()
 RETURNS TABLE (
     company_id INTEGER,
-    company_name VARCHAR(100),
+    companyname VARCHAR(100),
     created_date TIMESTAMP,
-    modified_date TIMESTAMP
+    modified_date TIMESTAMP,
+    isactive bool
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        CompanyID,
-        CompanyName,
-        CreatedDate,
-        ModifiedDate
-    FROM test.Companies
-    WHERE IsActive = TRUE
-    ORDER BY CompanyName;
+        c.CompanyID,
+        c.CompanyName,
+        c.CreatedDate,
+        c.ModifiedDate,
+		c.IsActive
+    FROM test.Companies c
+    ORDER BY c.CompanyName;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -694,17 +700,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION test.get_active_it_employees()
+CREATE OR REPLACE FUNCTION test.get_it_employees()
 RETURNS TABLE (
-    it_employee_id INTEGER,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
+    itemployeeid INTEGER,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
     email VARCHAR(100),
-    hire_date DATE,
-    user_type_id INTEGER,
-    user_type_name VARCHAR(50),
-    created_date TIMESTAMP,
-    modified_date TIMESTAMP
+    hiredate DATE,
+    usertypeid INTEGER,
+    usertypename VARCHAR(50),
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP,
+    isactive bool,
+    companyCount bigint
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -717,25 +725,64 @@ BEGIN
         e.UserTypeID,
         ut.TypeName,
         e.CreatedDate,
-        e.ModifiedDate
+        e.ModifiedDate,
+		e.IsActive,
+		count(c.CompanyId)
     FROM test.ITEmployees e
     JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
-    WHERE e.IsActive = TRUE
+	JOIN test.ITEmployeeCompanies ec ON e.ITEmployeeID = ec.ITEmployeeID
+	JOIN test.Companies c ON ec.CompanyID = c.CompanyID
+	group by e.ITEmployeeID, e.FirstName, e.LastName, e.Email, e.HireDate
+		, e.UserTypeID, ut.TypeName, e.CreatedDate, e.ModifiedDate, e.IsActive
     ORDER BY e.LastName, e.FirstName;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION test.get_active_new_hires()
+CREATE OR REPLACE FUNCTION test.get_it_employee(p_itemployee_id integer)
+RETURNS TABLE (
+    it_employee_id INTEGER,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    email VARCHAR(100),
+    hiredate DATE,
+    usertypeid INTEGER,
+    usertypename VARCHAR(50),
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP,
+    isactive bool
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        e.ITEmployeeID,
+        e.FirstName,
+        e.LastName,
+        e.Email,
+        e.HireDate,
+        e.UserTypeID,
+        ut.TypeName,
+        e.CreatedDate,
+        e.ModifiedDate,
+		e.IsActive
+    FROM test.ITEmployees e
+    JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
+	where e.itemployeeid = p_itemployee_id
+    ORDER BY e.LastName, e.FirstName;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION test.get_new_hires()
 RETURNS TABLE (
     new_hire_id INTEGER,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
     email VARCHAR(100),
     company_id INTEGER,
     company_name VARCHAR(100),
-    hire_date DATE,
+    start_date DATE,
     created_date TIMESTAMP,
-    modified_date TIMESTAMP
+    modified_date TIMESTAMP,
+    isactive bool
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -748,10 +795,10 @@ BEGIN
         c.CompanyName,
         nh.HireDate,
         nh.CreatedDate,
-        nh.ModifiedDate
+        nh.ModifiedDate,
+		nh.IsActive
     FROM test.NewHires nh
     JOIN test.Companies c ON nh.CompanyID = c.CompanyID
-    WHERE nh.IsActive = TRUE
     ORDER BY nh.HireDate DESC, nh.LastName, nh.FirstName;
 END;
 $$ LANGUAGE plpgsql;

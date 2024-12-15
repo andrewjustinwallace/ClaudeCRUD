@@ -10,33 +10,33 @@ import {
 } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL;
-console.log('API_URL:', API_URL); // Debug log
+console.log("API_URL:", API_URL); // Debug log
 
 // Configure axios defaults
 const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
-  }
+    "Content-Type": "application/json",
+  },
 });
 
 // Add response interceptor for error handling
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.log('Full error object:', error); // Debug log
+    console.log("Full error object:", error); // Debug log
     if (error.response) {
-      console.error('Response error:', {
+      console.error("Response error:", {
         status: error.response.status,
         data: error.response.data,
-        headers: error.response.headers
+        headers: error.response.headers,
       });
     } else if (error.request) {
-      console.error('Request error:', {
+      console.error("Request error:", {
         method: error.config?.method,
         url: error.config?.url,
         baseURL: error.config?.baseURL,
-        headers: error.config?.headers
+        headers: error.config?.headers,
       });
     }
     throw error;
@@ -52,11 +52,19 @@ export interface AdminServiceInterface {
   getActiveITEmployees(): Promise<ITEmployee[]>;
   upsertITEmployee(employee: Partial<ITEmployee>): Promise<number>;
   getEmployeeCompanyAssignments(employeeId: number): Promise<Company[]>;
-  assignCompanyToEmployee(companyId: number, employeeId: number): Promise<boolean>;
-  removeCompanyFromEmployee(companyId: number, employeeId: number): Promise<boolean>;
+  assignCompanyToEmployee(
+    companyId: number,
+    employeeId: number
+  ): Promise<boolean>;
+  removeCompanyFromEmployee(
+    companyId: number,
+    employeeId: number
+  ): Promise<boolean>;
   getActiveNewHires(): Promise<NewHire[]>;
   getCompanyStatistics(): Promise<CompanyStatistics>;
-  upsertNewHire(newHire: Partial<NewHireFormData> & { newHireId?: number }): Promise<number>;
+  upsertNewHire(
+    newHire: Partial<NewHireFormData> & { newHireId?: number }
+  ): Promise<number>;
   getNewHireById(id: number): Promise<NewHire>;
   updateNewHire(data: NewHireFormData): Promise<void>;
 }
@@ -88,12 +96,12 @@ class AdminService implements AdminServiceInterface {
   }
 
   async getActiveITEmployees(): Promise<ITEmployee[]> {
-    const response = await axiosInstance.get(`/employee`);
+    const response = await axiosInstance.get(`/itemployee`);
     return response.data;
   }
 
   async upsertITEmployee(employee: Partial<ITEmployee>): Promise<number> {
-    const response = await axiosInstance.post(`/employee`, employee);
+    const response = await axiosInstance.post(`/itemployee`, employee);
     return response.data;
   }
 
@@ -132,12 +140,15 @@ class AdminService implements AdminServiceInterface {
   }
 
   async getCompanyStatistics(): Promise<CompanyStatistics> {
-    console.log('Fetching company statistics from:', `${API_URL}/company/statistics`); // Debug log
+    console.log(
+      "Fetching company statistics from:",
+      `${API_URL}/company/statistics`
+    ); // Debug log
     try {
       const response = await axiosInstance.get(`/company/statistics`);
       return response.data;
     } catch (error) {
-      console.error('Detailed error in getCompanyStatistics:', error);
+      console.error("Detailed error in getCompanyStatistics:", error);
       throw error;
     }
   }

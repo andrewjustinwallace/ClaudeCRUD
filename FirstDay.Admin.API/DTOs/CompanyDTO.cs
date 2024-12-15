@@ -11,4 +11,5 @@ public class CompanyAssignmentDTO
 {
     public int ITEmployeeId { get; set; }
     public int CompanyId { get; set; }
+    public string CompanyName { get; set; } = string.Empty;
 }

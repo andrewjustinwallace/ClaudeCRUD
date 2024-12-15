@@ -1,14 +1,14 @@
-import { ReactNode } from 'react';
-import { 
-  HomeIcon, 
-  BuildingOfficeIcon, 
-  UsersIcon, 
+import { ReactNode } from "react";
+import {
+  HomeIcon,
+  BuildingOfficeIcon,
+  UsersIcon,
   ComputerDesktopIcon,
-  UserPlusIcon
+  UserPlusIcon,
 } from "@heroicons/react/24/outline";
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { cn } from '@/lib/utils';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
 
 interface NavItemProps {
   to: string;
@@ -39,35 +39,35 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const navigation = [
     {
       to: "/dashboard",
       icon: <HomeIcon />,
-      label: "Dashboard"
+      label: "Dashboard",
     },
     {
       to: "/companies",
       icon: <BuildingOfficeIcon />,
-      label: "Companies"
+      label: "Companies",
     },
     {
       to: "/employees",
       icon: <UsersIcon />,
-      label: "IT Staff"
+      label: "IT Staff",
     },
     {
       to: "/setuptypes",
       icon: <ComputerDesktopIcon />,
-      label: "Setup Types"
+      label: "Setup Types",
     },
     {
       to: "/newhires",
       icon: <UserPlusIcon />,
-      label: "New Hires"
-    }
+      label: "New Hires",
+    },
   ];
 
   return (
@@ -77,7 +77,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <span className="text-xl font-bold text-blue-600">FirstDay Admin</span>
+                <span className="text-xl font-bold text-blue-600">
+                  FirstDay Admin
+                </span>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-4 items-center">
                 {navigation.map((item) => (
@@ -109,9 +111,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </nav>
 
       <main className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {children}
-        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>
   );
