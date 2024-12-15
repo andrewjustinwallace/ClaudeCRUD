@@ -1,22 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User } from '@/types/auth';
-import { authService } from '@/services/authService';
+import { login as loginService, logout as logoutService, getCurrentUser, LoginResponse } from '@/services/authService';
 
 interface AuthContextType {
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: LoginResponse | null;
+  setUser: (user: LoginResponse | null) => void;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const storedUser = localStorage.getItem('user');
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [user, setUser] = useState<LoginResponse | null>(() => getCurrentUser());
 
   useEffect(() => {
     if (user) {
@@ -26,17 +22,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
-      const response = await authService.login(email, password);
-      if (response.user) {
-        const userData: User = {
-          employeeId: response.user.employeeId,
-          firstName: response.user.firstName,
-          lastName: response.user.lastName,
-          userType: response.user.userType
-        };
-        setUser(userData);
+      const response = await loginService(username, password);
+      if (response.authenticated && response.userType === 'Admin') {
+        setUser(response);
+      } else {
+        throw new Error('Access denied. Admin privileges required.');
       }
     } catch (error) {
       throw error;
@@ -45,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      authService.logout();
+      logoutService();
       setUser(null);
     } catch (error) {
       console.error('Logout error:', error);

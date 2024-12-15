@@ -662,15 +662,15 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT 
-        SetupTypeID,
-        SetupName,
-        Description,
-        EstimatedDurationMinutes,
-        CreatedDate,
-        ModifiedDate
-    FROM test.SetupTypes
-    WHERE IsActive = TRUE
-    ORDER BY SetupName;
+        st.SetupTypeID,
+        st.SetupName,
+        st.Description,
+        st.EstimatedDurationMinutes,
+        st.CreatedDate,
+        st.ModifiedDate
+    FROM test.SetupTypes st
+    WHERE st.IsActive = TRUE
+    ORDER BY st.SetupName;
 END;
 $$ LANGUAGE plpgsql;
 

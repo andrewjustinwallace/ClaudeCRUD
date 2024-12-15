@@ -1,4 +1,3 @@
-using FirstDay.Admin.API.DTOs;
 using FirstDay.Admin.API.Models;
 using FirstDay.Admin.API.Models.StoredProcedureModels;
 
@@ -27,4 +26,15 @@ public interface IAdminService
     Task<IEnumerable<SetupTypeStatistics>> GetSetupTypeStatisticsAsync();
     Task<IEnumerable<NewHireOnboardingStatus>> GetNewHireOnboardingStatusAsync(int companyId);
     Task<IEnumerable<RecentChange>> GetRecentChangesAsync(AuditRequestDTO request);
+
+    // New Hire Management
+    Task<IEnumerable<NewHire>> GetActiveNewHiresAsync();
+    Task<NewHire?> GetNewHireByIdAsync(int id);
+    Task<int> UpsertNewHireAsync(NewHireDTO newHire);
+    Task<bool> DeleteNewHireAsync(int id);
+    Task<NewHireProgress?> GetNewHireProgressAsync(int id);
+    Task<bool> UpdateNewHireProgressAsync(NewHireProgressDTO progress);
+    Task<IEnumerable<NewHire>> GetNewHiresByCompanyAsync(int companyId);
+    Task<IEnumerable<NewHireSetupStatus>> GetNewHireSetupStatusAsync(int? companyId);
+    Task<bool> CompleteNewHireSetupAsync(int id);
 }

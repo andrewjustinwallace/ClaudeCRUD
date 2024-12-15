@@ -3,11 +3,13 @@ namespace FirstDay.Admin.API.Services;
 public class AdminService : IAdminService
 {
     private readonly string _connectionString;
+    private readonly ILogger<AdminService> _logger;
 
-    public AdminService(IConfiguration configuration)
+    public AdminService(IConfiguration configuration, ILogger<AdminService> logger)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection") ?? 
+        _connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new ArgumentNullException(nameof(configuration));
+        _logger = logger;
     }
 
     // Company Management
@@ -132,5 +134,90 @@ public class AdminService : IAdminService
         return await connection.QueryAsync<RecentChange>(
             "SELECT * FROM test.get_recent_changes(@CompanyId, @Days)",
             new { request.CompanyId, request.Days });
+    }
+
+    public async Task<IEnumerable<NewHire>> GetActiveNewHiresAsync()
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QueryAsync<NewHire>(
+            "SELECT * FROM test.get_active_new_hires()");
+    }
+
+    public async Task<NewHire?> GetNewHireByIdAsync(int id)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleOrDefaultAsync<NewHire>(
+            "SELECT * FROM test.get_new_hire_by_id(@NewHireId)",
+            new { NewHireId = id });
+    }
+
+    public async Task<int> UpsertNewHireAsync(NewHireDTO newHire)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleAsync<int>(
+            "SELECT test.upsert_new_hire(@NewHireId, @CompanyId, @FirstName, @LastName, " +
+            "@Email, @Title, @Department, @StartDate, @IsActive, @AssignedToEmployeeId)",
+            new
+            {
+                NewHireId = newHire.NewHireId ?? 0,
+                newHire.CompanyId,
+                newHire.FirstName,
+                newHire.LastName,
+                newHire.Email,
+                newHire.Title,
+                newHire.Department,
+                newHire.StartDate,
+                newHire.IsActive,
+                newHire.AssignedToEmployeeId
+            });
+    }
+
+    public async Task<bool> DeleteNewHireAsync(int id)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleAsync<bool>(
+            "SELECT test.delete_new_hire(@NewHireId)",
+            new { NewHireId = id });
+    }
+
+    public async Task<NewHireProgress?> GetNewHireProgressAsync(int id)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleOrDefaultAsync<NewHireProgress>(
+            "SELECT * FROM test.get_new_hire_progress(@NewHireId)",
+            new { NewHireId = id });
+    }
+
+    public async Task<bool> UpdateNewHireProgressAsync(NewHireProgressDTO progress)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleAsync<bool>(
+            "SELECT test.update_new_hire_progress(@NewHireId, @SetupCompleted, @EquipmentOrdered, " +
+            "@EquipmentReceived, @WorkspaceAssigned, @SystemAccessGranted, @TrainingScheduled, @IsCompleted)",
+            progress);
+    }
+
+    public async Task<IEnumerable<NewHire>> GetNewHiresByCompanyAsync(int companyId)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QueryAsync<NewHire>(
+            "SELECT * FROM test.get_new_hires_by_company(@CompanyId)",
+            new { CompanyId = companyId });
+    }
+
+    public async Task<IEnumerable<NewHireSetupStatus>> GetNewHireSetupStatusAsync(int? companyId)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QueryAsync<NewHireSetupStatus>(
+            "SELECT * FROM test.get_new_hire_setup_status(@CompanyId)",
+            new { CompanyId = companyId });
+    }
+
+    public async Task<bool> CompleteNewHireSetupAsync(int id)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleAsync<bool>(
+            "SELECT test.complete_new_hire_setup(@NewHireId)",
+            new { NewHireId = id });
     }
 }

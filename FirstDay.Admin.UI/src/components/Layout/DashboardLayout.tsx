@@ -1,16 +1,15 @@
 import { Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', current: true },
   { name: 'Companies', href: '/companies', current: false },
-  { name: 'Setup Types', href: '/setup-types', current: false },
-  { name: 'IT Employees', href: '/it-employees', current: false },
-  { name: 'New Hires', href: '/new-hires', current: false },
-  { name: 'Reports', href: '/reports', current: false },
+  { name: 'Setup Types', href: '/setuptypes', current: false },
+  { name: 'IT Employees', href: '/employees', current: false },
+  { name: 'New Hires', href: '/newhires', current: false },
 ];
 
 function classNames(...classes: string[]) {
@@ -30,6 +29,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     navigate('/login');
   };
 
+  // Get user initials safely
+  const getUserInitial = () => {
+    return user?.firstName ? user.firstName[0]?.toUpperCase() : '?';
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Disclosure as="nav" className="bg-indigo-600">
@@ -44,9 +48,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <div className="hidden md:block">
                     <div className="ml-10 flex items-baseline space-x-4">
                       {navigation.map((item) => (
-                        <a
+                        <Link
                           key={item.name}
-                          href={item.href}
+                          to={item.href}
                           className={classNames(
                             item.current
                               ? 'bg-indigo-700 text-white'
@@ -55,7 +59,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           )}
                         >
                           {item.name}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -67,7 +71,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <Menu.Button className="flex max-w-xs items-center rounded-full bg-indigo-600 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">
                           <span className="sr-only">Open user menu</span>
                           <span className="h-8 w-8 rounded-full bg-indigo-700 flex items-center justify-center">
-                            {user?.firstName[0]}
+                            {getUserInitial()}
                           </span>
                         </Menu.Button>
                       </div>
@@ -117,8 +121,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {navigation.map((item) => (
                   <Disclosure.Button
                     key={item.name}
-                    as="a"
-                    href={item.href}
+                    as={Link}
+                    to={item.href}
                     className={classNames(
                       item.current
                         ? 'bg-indigo-700 text-white'
@@ -134,7 +138,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <div className="flex items-center px-5">
                   <div className="flex-shrink-0">
                     <span className="h-10 w-10 rounded-full bg-indigo-700 flex items-center justify-center text-white">
-                      {user?.firstName[0]}
+                      {getUserInitial()}
                     </span>
                   </div>
                   <div className="ml-3">

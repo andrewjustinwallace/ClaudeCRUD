@@ -14,33 +14,40 @@ import NewHireProgress from '@/pages/NewHireProgress';
 import SetupTypeEdit from '@/pages/SetupTypeEdit';
 import { AuthProvider } from '@/context/AuthContext';
 import PrivateRoute from '@/components/PrivateRoute';
+import { LoadingProvider } from '@/context/LoadingContext';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          
-          {/* Protected Routes */}
-          <Route element={<PrivateRoute />}>
-            <Route element={<DashboardLayout><Outlet /></DashboardLayout>}>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/companies" element={<Companies />} />
-              <Route path="/setuptypes" element={<SetupTypes />} />
-              <Route path="/setuptypes/:id" element={<SetupTypeEdit />} />
-              <Route path="/employees" element={<ITEmployees />} />
-              <Route path="/employees/:id" element={<ITEmployeeEdit />} />
-              <Route path="/newhires" element={<NewHires />} />
-              <Route path="/newhires/create" element={<NewHireCreate />} />
-              <Route path="/newhires/:id/edit" element={<NewHireEdit />} />
-              <Route path="/newhires/:id/progress" element={<NewHireProgress />} />
+      <LoadingProvider>
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            
+            {/* Protected Routes */}
+            <Route path="/" element={<PrivateRoute />}>
+              <Route element={<DashboardLayout><Outlet /></DashboardLayout>}>
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="companies" element={<Companies />} />
+                <Route path="setuptypes" element={<SetupTypes />} />
+                <Route path="setuptypes/:id" element={<SetupTypeEdit />} />
+                <Route path="employees" element={<ITEmployees />} />
+                <Route path="employees/:id" element={<ITEmployeeEdit />} />
+                <Route path="newhires" element={<NewHires />} />
+                <Route path="newhires/create" element={<NewHireCreate />} />
+                <Route path="newhires/:id/edit" element={<NewHireEdit />} />
+                <Route path="newhires/:id/progress" element={<NewHireProgress />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-        <Toaster />
-      </Router>
+
+            {/* Catch-all redirect to login */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+          <Toaster />
+        </Router>
+      </LoadingProvider>
     </AuthProvider>
   );
 }

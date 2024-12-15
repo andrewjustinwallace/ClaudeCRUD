@@ -1,84 +1,97 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login } from "@/services/authService";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setError("");
 
     try {
-      await login(email, password);
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        title: 'Error',
-        description: 'Invalid email or password',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+      const response = await login(username, password);
+      if (response.authenticated) {
+        // Store user info in localStorage and context
+        setUser(response); // Now passing the complete LoginResponse
+
+        // Admin users go directly to dashboard
+        if (response.userType === "Admin") {
+          navigate("/dashboard");
+        } else {
+          setError("Access denied. Admin privileges required.");
+          localStorage.removeItem("user");
+          setUser(null);
+        }
+      }
+    } catch (err) {
+      setError("Invalid username or password");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle>FirstDay Admin</CardTitle>
-          <CardDescription>Enter your credentials to access the admin portal</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to FirstDay Admin
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="username" className="sr-only">
+                Username
               </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+              <input
+                id="username"
+                name="username"
+                type="text"
                 required
-                className="w-full"
-                placeholder="admin@example.com"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+            <div>
+              <label htmlFor="password" className="sr-only">
                 Password
               </label>
-              <Input
+              <input
                 id="password"
+                name="password"
+                required
                 type="password"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full"
               />
             </div>
-            <Button
+          </div>
+
+          {error && (
+            <div className="text-sm text-red-600 text-center bg-red-50 p-2 rounded">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <button
               type="submit"
-              className="w-full"
-              disabled={isLoading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              Sign in
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
