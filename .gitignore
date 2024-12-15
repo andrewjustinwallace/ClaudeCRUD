@@ -128,3 +128,5 @@ appsettings.Development.json
 appsettings.Local.json
 /FirstDay.UI/node_modules
 /FirstDay.UI/dist
+/FirstDay.Admin.UI/node_modules
+/FirstDay.Admin.UI/dist
