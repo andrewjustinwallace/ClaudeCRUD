@@ -158,3 +158,34 @@ CREATE TABLE test.ITEmployeeCompanies (
 CREATE INDEX IX_ITEmployeeCompanies_ITEmployeeID ON test.ITEmployeeCompanies(ITEmployeeID);
 CREATE INDEX IX_ITEmployeeCompanies_CompanyID ON test.ITEmployeeCompanies(CompanyID);
 
+-- Add IsActive columns to all relevant tables
+ALTER TABLE test.Companies 
+ADD COLUMN IF NOT EXISTS IsActive BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE test.ITEmployees 
+ADD COLUMN IF NOT EXISTS IsActive BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE test.NewHires 
+ADD COLUMN IF NOT EXISTS IsActive BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE test.SetupTypes 
+ADD COLUMN IF NOT EXISTS IsActive BOOLEAN DEFAULT TRUE;
+
+-- Update existing records to be active
+UPDATE test.Companies SET IsActive = TRUE WHERE IsActive IS NULL;
+UPDATE test.ITEmployees SET IsActive = TRUE WHERE IsActive IS NULL;
+UPDATE test.NewHires SET IsActive = TRUE WHERE IsActive IS NULL;
+UPDATE test.SetupTypes SET IsActive = TRUE WHERE IsActive IS NULL;
+
+-- Add NOT NULL constraint after setting default values
+ALTER TABLE test.Companies 
+ALTER COLUMN IsActive SET NOT NULL;
+
+ALTER TABLE test.ITEmployees 
+ALTER COLUMN IsActive SET NOT NULL;
+
+ALTER TABLE test.NewHires 
+ALTER COLUMN IsActive SET NOT NULL;
+
+ALTER TABLE test.SetupTypes 
+ALTER COLUMN IsActive SET NOT NULL;
