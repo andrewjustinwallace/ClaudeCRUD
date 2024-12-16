@@ -636,22 +636,22 @@ $$ LANGUAGE plpgsql;
 
 -- Monitoring Functions
 
-CREATE OR replace FUNCTION test.get_active_companies()
+CREATE OR REPLACE FUNCTION test.get_active_companies()
 RETURNS TABLE (
-    company_id INTEGER,
-    companyname VARCHAR(100),
-    created_date TIMESTAMP,
-    modified_date TIMESTAMP,
-    isactive bool
+    CompanyId INTEGER,
+    CompanyName VARCHAR(100),
+    CreatedDate TIMESTAMP,
+    ModifiedDate TIMESTAMP,
+    IsActive bool
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
-        c.CompanyID,
+    SELECT
+        c.CompanyId,
         c.CompanyName,
         c.CreatedDate,
         c.ModifiedDate,
-		c.IsActive
+        c.IsActive
     FROM test.Companies c
     ORDER BY c.CompanyName;
 END;
