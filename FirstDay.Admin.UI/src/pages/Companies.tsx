@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
 import { adminService } from '@/services/adminService';
-import { Company } from '@/types';
+import { Company, CompanyStatistics } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  ChartBarIcon,
+  CalendarIcon,
+  UsersIcon
+} from '@heroicons/react/24/outline';
 import {
   Table,
   TableBody,
@@ -14,11 +21,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
+
+interface CompanyWithStats extends Company {
+  statistics?: CompanyStatistics;
+}
 
 export default function Companies() {
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<CompanyWithStats[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadCompanies();
@@ -27,11 +40,27 @@ export default function Companies() {
   const loadCompanies = async () => {
     try {
       setLoading(true);
-      const data = await adminService.getActiveCompanies();
-      console.log('Raw API response:', data);
+      const [companiesData, statsData] = await Promise.all([
+        adminService.getActiveCompanies(),
+        adminService.getCompanyStatistics()
+      ]);
       
-      // Set the companies directly without filtering
-      setCompanies(data);
+      console.log('Raw companies data:', JSON.stringify(companiesData, null, 2));
+      console.log('Raw statistics data:', JSON.stringify(statsData, null, 2));
+      
+      // Combine company data with statistics
+      const enrichedData = companiesData.map(company => {
+        const stats = statsData.find(stat => stat.companyId === company.companyId);
+        const enrichedCompany = {
+          ...company,
+          statistics: stats
+        };
+        console.log('Enriched company:', JSON.stringify(enrichedCompany, null, 2));
+        return enrichedCompany;
+      });
+
+      console.log('All enriched companies:', JSON.stringify(enrichedData, null, 2));
+      setCompanies(enrichedData);
     } catch (error) {
       console.error('Error loading companies:', error);
     } finally {
@@ -43,18 +72,16 @@ export default function Companies() {
     company.companyName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  console.log('Filtered companies:', filteredCompanies);
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Companies</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Manage your organization's companies and their settings
+            Manage companies and their onboarding processes
           </p>
         </div>
-        <Button>
+        <Button onClick={() => navigate('/companies/new')}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Company
         </Button>
@@ -81,22 +108,24 @@ export default function Companies() {
             <TableHeader>
               <TableRow>
                 <TableHead>Company Name</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Active Onboarding</TableHead>
+                <TableHead>Total New Hires</TableHead>
                 <TableHead>Created Date</TableHead>
-                <TableHead>Last Modified</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Analytics</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
+                <TableRow key="loading">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Loading companies...
                   </TableCell>
                 </TableRow>
               ) : filteredCompanies.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
+                <TableRow key="no-results">
+                  <TableCell colSpan={7} className="text-center py-8">
                     No companies found
                   </TableCell>
                 </TableRow>
@@ -107,19 +136,46 @@ export default function Companies() {
                       {company.companyName}
                     </TableCell>
                     <TableCell>
+                      <div className="flex items-center">
+                        <UsersIcon className="h-4 w-4 mr-1 text-gray-500" />
+                        {company.statistics?.pendingSetups || 0}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <UsersIcon className="h-4 w-4 mr-1 text-gray-500" />
+                        {company.statistics?.totalNewHires || 0}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center text-gray-600">
+                        <CalendarIcon className="h-4 w-4 mr-1" />
+                        {new Date(company.createdDate).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <Badge variant={company.isActive ? "default" : "secondary"}>
                         {company.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {new Date(company.createdDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(company.modifiedDate).toLocaleDateString()}
+                      <Button
+                        variant="ghost"
+                        className="h-8"
+                        onClick={() => navigate(`/companies/${company.companyId}/dashboard`)}
+                      >
+                        <ChartBarIcon className="h-4 w-4 mr-1" />
+                        View Analytics
+                      </Button>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => navigate(`/companies/${company.companyId}/edit`)}
+                        >
                           <PencilIcon className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8">

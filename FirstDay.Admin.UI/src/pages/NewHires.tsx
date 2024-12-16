@@ -47,20 +47,27 @@ export default function NewHires() {
       const data = await adminService.getActiveNewHires();
       console.log('Raw new hires data:', data);
       
-      // Validate and ensure unique IDs
+      // Validate and convert IDs to numbers
       const idSet = new Set();
       const validatedData = data.map((hire, index) => {
-        if (!hire.newHireId) {
-          console.warn(`New hire missing ID, using index:`, hire);
-          return { ...hire, newHireId: `temp-${index}` };
+        const convertedHire = {
+          ...hire,
+          newHireId: typeof hire.newHireId === 'string' ? parseInt(hire.newHireId) : hire.newHireId
+        };
+
+        if (!convertedHire.newHireId || isNaN(convertedHire.newHireId)) {
+          console.warn(`New hire missing valid ID, using index:`, hire);
+          return { ...convertedHire, newHireId: -(index + 1) };
         }
-        if (idSet.has(hire.newHireId)) {
-          console.warn(`Duplicate new hire ID found:`, hire.newHireId);
-          return { ...hire, newHireId: `${hire.newHireId}-${index}` };
+
+        if (idSet.has(convertedHire.newHireId)) {
+          console.warn(`Duplicate new hire ID found:`, convertedHire.newHireId);
+          return { ...convertedHire, newHireId: -(index + 1) };
         }
-        idSet.add(hire.newHireId);
-        return hire;
-      });
+
+        idSet.add(convertedHire.newHireId);
+        return convertedHire;
+      }) as NewHire[];
 
       console.log('Validated new hires data:', validatedData);
       setNewHires(validatedData);
@@ -90,7 +97,9 @@ export default function NewHires() {
 
   const filteredNewHires = useMemo(() => {
     return newHires.filter(newHire => {
-      const matchesSearch = `${newHire.firstName} ${newHire.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch = `${newHire.firstName} ${newHire.lastName}`
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
         newHire.email.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCompany = selectedCompany === 'all' || newHire.companyId.toString() === selectedCompany;
       return matchesSearch && matchesCompany;
@@ -185,13 +194,11 @@ export default function NewHires() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredNewHires.map((newHire, index) => {
+                filteredNewHires.map((newHire) => {
                   const daysUntilStart = getDaysUntilStart(newHire.hireDate);
-                  const uniqueKey = `newhire-${newHire.newHireId}-${index}`;
-                  console.log('Rendering row with key:', uniqueKey, 'for new hire:', newHire);
                   
                   return (
-                    <TableRow key={uniqueKey}>
+                    <TableRow key={newHire.newHireId}>
                       <TableCell className="font-medium">
                         {newHire.firstName} {newHire.lastName}
                       </TableCell>

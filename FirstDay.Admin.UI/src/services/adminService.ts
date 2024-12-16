@@ -61,7 +61,7 @@ export interface AdminServiceInterface {
     employeeId: number
   ): Promise<boolean>;
   getActiveNewHires(): Promise<NewHire[]>;
-  getCompanyStatistics(): Promise<CompanyStatistics>;
+  getCompanyStatistics(): Promise<CompanyStatistics[]>;
   upsertNewHire(
     newHire: Partial<NewHireFormData> & { newHireId?: number }
   ): Promise<number>;
@@ -139,7 +139,7 @@ class AdminService implements AdminServiceInterface {
     return response.data;
   }
 
-  async getCompanyStatistics(): Promise<CompanyStatistics> {
+  async getCompanyStatistics(): Promise<CompanyStatistics[]> {
     console.log(
       "Fetching company statistics from:",
       `${API_URL}/company/statistics`

@@ -37,20 +37,27 @@ export default function ITEmployees() {
       const data = await adminService.getActiveITEmployees();
       console.log("Raw employee data:", data);
 
-      // Validate and ensure unique IDs
+      // Validate and convert IDs to numbers
       const idSet = new Set();
       const validatedData = data.map((emp, index) => {
-        if (!emp.itEmployeeId) {
-          console.warn(`Employee missing ID, using index:`, emp);
-          return { ...emp, itEmployeeId: `temp-${index}` };
+        const convertedEmp = {
+          ...emp,
+          itEmployeeId: typeof emp.itEmployeeId === 'string' ? parseInt(emp.itEmployeeId) : emp.itEmployeeId
+        };
+
+        if (!convertedEmp.itEmployeeId || isNaN(convertedEmp.itEmployeeId)) {
+          console.warn(`Employee missing valid ID, using index:`, emp);
+          return { ...convertedEmp, itEmployeeId: -(index + 1) }; // Use negative numbers for temporary IDs
         }
-        if (idSet.has(emp.itEmployeeId)) {
-          console.warn(`Duplicate employee ID found:`, emp.itEmployeeId);
-          return { ...emp, itEmployeeId: `${emp.itEmployeeId}-${index}` };
+
+        if (idSet.has(convertedEmp.itEmployeeId)) {
+          console.warn(`Duplicate employee ID found:`, convertedEmp.itEmployeeId);
+          return { ...convertedEmp, itEmployeeId: -(index + 1) };
         }
-        idSet.add(emp.itEmployeeId);
-        return emp;
-      });
+
+        idSet.add(convertedEmp.itEmployeeId);
+        return convertedEmp;
+      }) as ITEmployee[];
 
       console.log("Validated employee data:", validatedData);
       setEmployees(validatedData);
@@ -127,63 +134,54 @@ export default function ITEmployees() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredEmployees.map((employee, index) => {
-                  const uniqueKey = `${employee.itEmployeeId}-${index}`;
-                  console.log(
-                    "Rendering row with key:",
-                    uniqueKey,
-                    "for employee:",
-                    employee
-                  );
-                  return (
-                    <TableRow key={uniqueKey}>
-                      <TableCell className="font-medium">
-                        {employee.firstName} {employee.lastName}
-                      </TableCell>
-                      <TableCell>{employee.email}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{employee.userTypeName}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <BuildingOfficeIcon className="h-4 w-4 mr-1" />
-                          <span>{employee.companyCount || 0}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={employee.isActive ? "default" : "secondary"}
+                filteredEmployees.map((employee) => (
+                  <TableRow key={employee.itEmployeeId}>
+                    <TableCell className="font-medium">
+                      {employee.firstName} {employee.lastName}
+                    </TableCell>
+                    <TableCell>{employee.email}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{employee.userTypeName}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <BuildingOfficeIcon className="h-4 w-4 mr-1" />
+                        <span>{employee.companyCount || 0}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={employee.isActive ? "default" : "secondary"}
+                      >
+                        {employee.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(employee.hireDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() =>
+                            navigate(`/employees/${employee.itEmployeeId}`)
+                          }
                         >
-                          {employee.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(employee.hireDate).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                              navigate(`/employees/${employee.itEmployeeId}`)
-                            }
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                          <PencilIcon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>

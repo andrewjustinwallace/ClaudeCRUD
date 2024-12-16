@@ -37,20 +37,27 @@ export default function SetupTypes() {
       const data = await adminService.getActiveSetupTypes();
       console.log('Raw setup types data:', data);
       
-      // Validate and ensure unique IDs
+      // Validate and convert IDs to numbers
       const idSet = new Set();
       const validatedData = data.map((setup, index) => {
-        if (!setup.setupTypeId) {
-          console.warn(`Setup type missing ID, using index:`, setup);
-          return { ...setup, setupTypeId: `temp-${index}` };
+        const convertedSetup = {
+          ...setup,
+          setupTypeId: typeof setup.setupTypeId === 'string' ? parseInt(setup.setupTypeId) : setup.setupTypeId
+        };
+
+        if (!convertedSetup.setupTypeId || isNaN(convertedSetup.setupTypeId)) {
+          console.warn(`Setup type missing valid ID, using index:`, setup);
+          return { ...convertedSetup, setupTypeId: -(index + 1) };
         }
-        if (idSet.has(setup.setupTypeId)) {
-          console.warn(`Duplicate setup type ID found:`, setup.setupTypeId);
-          return { ...setup, setupTypeId: `${setup.setupTypeId}-${index}` };
+
+        if (idSet.has(convertedSetup.setupTypeId)) {
+          console.warn(`Duplicate setup type ID found:`, convertedSetup.setupTypeId);
+          return { ...convertedSetup, setupTypeId: -(index + 1) };
         }
-        idSet.add(setup.setupTypeId);
-        return setup;
-      });
+
+        idSet.add(convertedSetup.setupTypeId);
+        return convertedSetup;
+      }) as SetupType[];
 
       console.log('Validated setup types data:', validatedData);
       setSetupTypes(validatedData);
@@ -130,47 +137,42 @@ export default function SetupTypes() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredSetupTypes.map((setupType, index) => {
-                  const uniqueKey = `setuptype-${setupType.setupTypeId}-${index}`;
-                  console.log('Rendering row with key:', uniqueKey, 'for setup type:', setupType);
-                  
-                  return (
-                    <TableRow key={uniqueKey}>
-                      <TableCell className="font-medium">
-                        {setupType.setupName}
-                      </TableCell>
-                      <TableCell className="max-w-md truncate">
-                        {setupType.description}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center text-gray-600">
-                          <ClockIcon className="h-4 w-4 mr-1" />
-                          {formatDuration(setupType.estimatedDurationMinutes)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={setupType.isActive ? "default" : "secondary"}>
-                          {setupType.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => navigate(`/setuptypes/${setupType.setupTypeId}`)}
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                filteredSetupTypes.map((setupType) => (
+                  <TableRow key={setupType.setupTypeId}>
+                    <TableCell className="font-medium">
+                      {setupType.setupName}
+                    </TableCell>
+                    <TableCell className="max-w-md truncate">
+                      {setupType.description}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center text-gray-600">
+                        <ClockIcon className="h-4 w-4 mr-1" />
+                        {formatDuration(setupType.estimatedDurationMinutes)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={setupType.isActive ? "default" : "secondary"}>
+                        {setupType.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => navigate(`/setuptypes/${setupType.setupTypeId}`)}
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
