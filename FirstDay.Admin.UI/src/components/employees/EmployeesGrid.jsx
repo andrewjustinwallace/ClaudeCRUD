@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../config/api';
 import Modal from '../shared/Modal';
+import EmployeeForm from './components/EmployeeForm';
+import EmployeeTable from './components/EmployeeTable';
 
 const EmployeesGrid = () => {
   const [employees, setEmployees] = useState([]);
@@ -17,7 +19,12 @@ const EmployeesGrid = () => {
     email: '',
     hireDate: new Date().toISOString().split('T')[0],
     userTypeId: 2,  // Default to IT Employee type
-    isActive: true
+    isActive: true,
+    username: '',
+    password: '',
+    companies: [],
+    companyCount: 0,
+    onChange: (newForm) => setEditForm(newForm)
   });
 
   useEffect(() => {
@@ -38,13 +45,10 @@ const EmployeesGrid = () => {
   const handleEdit = (employee) => {
     setEditingId(employee.itEmployeeId);
     setEditForm({
-      itEmployeeId: employee.itEmployeeId,
-      firstName: employee.firstName,
-      lastName: employee.lastName,
-      email: employee.email,
+      ...employee,
       hireDate: new Date(employee.hireDate).toISOString().split('T')[0],
-      userTypeId: employee.userTypeId,
-      isActive: employee.isActive
+      password: '',  // Clear password on edit
+      onChange: (newForm) => setEditForm(newForm)
     });
   };
 
@@ -75,7 +79,12 @@ const EmployeesGrid = () => {
           email: '',
           hireDate: new Date().toISOString().split('T')[0],
           userTypeId: 2,
-          isActive: true
+          isActive: true,
+          username: '',
+          password: '',
+          companies: [],
+          companyCount: 0,
+          onChange: (newForm) => setEditForm(newForm)
         });
       }
     } catch (err) {
@@ -92,14 +101,14 @@ const EmployeesGrid = () => {
       email: '',
       hireDate: new Date().toISOString().split('T')[0],
       userTypeId: 2,
-      isActive: true
+      isActive: true,
+      username: '',
+      password: '',
+      companies: [],
+      companyCount: 0,
+      onChange: (newForm) => setEditForm(newForm)
     });
   };
-
-  const filteredEmployees = employees.filter(employee =>
-    `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
@@ -113,83 +122,9 @@ const EmployeesGrid = () => {
     </div>
   );
 
-  const renderForm = (form, onSubmit, onCancel) => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            First Name
-          </label>
-          <input
-            type="text"
-            className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-            value={form.firstName}
-            onChange={(e) => setEditForm({...form, firstName: e.target.value})}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Last Name
-          </label>
-          <input
-            type="text"
-            className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-            value={form.lastName}
-            onChange={(e) => setEditForm({...form, lastName: e.target.value})}
-          />
-        </div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Email
-        </label>
-        <input
-          type="email"
-          className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-          value={form.email}
-          onChange={(e) => setEditForm({...form, email: e.target.value})}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Hire Date
-        </label>
-        <input
-          type="date"
-          className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-          value={form.hireDate}
-          onChange={(e) => setEditForm({...form, hireDate: e.target.value})}
-        />
-      </div>
-      <div>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            className="form-checkbox h-4 w-4 text-blue-600"
-            checked={form.isActive}
-            onChange={(e) => setEditForm({...form, isActive: e.target.checked})}
-          />
-          <span className="ml-2 text-sm text-gray-700">Active</span>
-        </label>
-      </div>
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onSubmit}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md inline-flex items-center"
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-          </svg>
-          Save
-        </button>
-      </div>
-    </div>
+  const filteredEmployees = employees.filter(employee =>
+    `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    employee.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -215,7 +150,11 @@ const EmployeesGrid = () => {
         }}
         title="Add New IT Employee"
       >
-        {renderForm(editForm, handleAdd, () => setIsAddModalOpen(false))}
+        <EmployeeForm
+          form={editForm}
+          onSubmit={handleAdd}
+          onCancel={() => setIsAddModalOpen(false)}
+        />
       </Modal>
 
       <div className="mb-4">
@@ -238,113 +177,13 @@ const EmployeesGrid = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hire Date
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Companies
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredEmployees.map((employee) => (
-                <React.Fragment key={employee.itEmployeeId}>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {employee.firstName} {employee.lastName}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {employee.email}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {new Date(employee.hireDate).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {employee.companyCount}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        employee.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {employee.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {editingId === employee.itEmployeeId ? (
-                        <>
-                          <button 
-                            onClick={() => handleSave(employee.itEmployeeId)}
-                            className="text-green-600 hover:text-green-900 mr-2 inline-flex items-center"
-                          >
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Save
-                          </button>
-                          <button 
-                            onClick={handleCancel}
-                            className="text-gray-600 hover:text-gray-900"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <button 
-                          onClick={() => handleEdit(employee)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          Edit
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                  {editingId === employee.itEmployeeId && (
-                    <tr className="bg-gray-50">
-                      <td colSpan="6" className="px-6 py-4">
-                        {renderForm(editForm, () => handleSave(employee.itEmployeeId), handleCancel)}
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-              {filteredEmployees.length === 0 && (
-                <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                    No employees found matching your search criteria
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <EmployeeTable
+        employees={filteredEmployees}
+        onEdit={handleEdit}
+        editingId={editingId}
+        handleSave={handleSave}
+        handleCancel={handleCancel}
+      />
     </div>
   );
 };

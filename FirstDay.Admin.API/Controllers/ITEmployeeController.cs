@@ -68,6 +68,29 @@ public class ITEmployeeController : ControllerBase
         }
     }
 
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<bool>> DeleteITEmployee(int id)
+    {
+        try
+        {
+            var employee = await _adminService.GetITEmployeeByIdAsync(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            // Set IsActive to false instead of physically deleting
+            employee.IsActive = false;
+            await _adminService.UpsertITEmployeeAsync(employee);
+            return Ok(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting IT employee with ID: {Id}", id);
+            return StatusCode(500, "An error occurred while deleting the IT employee");
+        }
+    }
+
     [HttpGet("assignments/{employeeId}")]
     public async Task<ActionResult<IEnumerable<CompanyAssignmentDTO>>> GetEmployeeCompanyAssignments(int employeeId)
     {

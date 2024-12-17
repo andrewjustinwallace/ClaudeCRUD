@@ -408,6 +408,7 @@ $$ LANGUAGE plpgsql;
 
 -- IT Employee Management Functions
 --select * from test.upsert_it_employee(6, 'asdf', 'asdf', 'asdf', '2024-12-17', 2, 'asdf', 'asdf', true)
+
 CREATE OR replace FUNCTION test.upsert_it_employee(
     p_it_employee_id INTEGER,
     p_first_name TEXT,

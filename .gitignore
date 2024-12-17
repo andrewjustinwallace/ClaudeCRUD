@@ -131,3 +131,6 @@ appsettings.Local.json
 /FirstDay.Admin.UI/node_modules
 /FirstDay.Admin.UI/dist
 /FirstDay.Admin.UI - Copy
+/FirstDay.Admin.UI/build/static/css
+/FirstDay.Admin.UI/build/static/js
+/FirstDay.Admin.UI/build
