@@ -22,6 +22,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
+import { CompanyEditForm } from '@/components/companies/CompanyEditForm';
 
 interface CompanyWithStats extends Company {
   statistics?: CompanyStatistics;
@@ -31,6 +32,7 @@ export default function Companies() {
   const [companies, setCompanies] = useState<CompanyWithStats[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [editingCompanyId, setEditingCompanyId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,21 +47,14 @@ export default function Companies() {
         adminService.getCompanyStatistics()
       ]);
       
-      console.log('Raw companies data:', JSON.stringify(companiesData, null, 2));
-      console.log('Raw statistics data:', JSON.stringify(statsData, null, 2));
-      
-      // Combine company data with statistics
       const enrichedData = companiesData.map(company => {
         const stats = statsData.find(stat => stat.companyId === company.companyId);
-        const enrichedCompany = {
+        return {
           ...company,
           statistics: stats
         };
-        console.log('Enriched company:', JSON.stringify(enrichedCompany, null, 2));
-        return enrichedCompany;
       });
 
-      console.log('All enriched companies:', JSON.stringify(enrichedData, null, 2));
       setCompanies(enrichedData);
     } catch (error) {
       console.error('Error loading companies:', error);
@@ -68,121 +63,157 @@ export default function Companies() {
     }
   };
 
+  const handleEdit = (companyId: number) => {
+    setEditingCompanyId(companyId);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCompanyId(null);
+  };
+
+  const handleSaveEdit = async () => {
+    await loadCompanies();
+    setEditingCompanyId(null);
+  };
+
   const filteredCompanies = companies.filter(company =>
     company.companyName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 p-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Companies</h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <h2 className="text-2xl font-bold text-blue-900">Companies</h2>
+          <p className="mt-1 text-sm text-blue-700">
             Manage companies and their onboarding processes
           </p>
         </div>
-        <Button onClick={() => navigate('/companies/new')}>
+        <Button onClick={() => navigate('/companies/new')} className="bg-blue-600 text-white hover:bg-blue-700 shadow-sm">
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Company
         </Button>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
         <div className="flex justify-between items-center mb-6">
           <div className="w-1/3">
             <Input
               placeholder="Search companies..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
+              className="max-w-sm bg-white/70"
             />
           </div>
           <div className="space-x-2">
-            <Button variant="outline">Export</Button>
-            <Button variant="outline">Filter</Button>
+            <Button variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+              Export
+            </Button>
+            <Button variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+              Filter
+            </Button>
           </div>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-md border border-blue-100 overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Company Name</TableHead>
-                <TableHead>Active Onboarding</TableHead>
-                <TableHead>Total New Hires</TableHead>
-                <TableHead>Created Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Analytics</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+              <TableRow className="bg-blue-50/50">
+                <TableHead className="text-blue-900">Company Name</TableHead>
+                <TableHead className="text-blue-900">Active Onboarding</TableHead>
+                <TableHead className="text-blue-900">Total New Hires</TableHead>
+                <TableHead className="text-blue-900">Created Date</TableHead>
+                <TableHead className="text-blue-900">Status</TableHead>
+                <TableHead className="text-blue-900">Analytics</TableHead>
+                <TableHead className="text-blue-900 w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow key="loading">
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8 text-blue-800">
                     Loading companies...
                   </TableCell>
                 </TableRow>
               ) : filteredCompanies.length === 0 ? (
                 <TableRow key="no-results">
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8 text-blue-800">
                     No companies found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredCompanies.map((company, index) => (
-                  <TableRow key={`${company.companyId}-${index}`}>
-                    <TableCell className="font-medium">
-                      {company.companyName}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <UsersIcon className="h-4 w-4 mr-1 text-gray-500" />
-                        {company.statistics?.pendingSetups || 0}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <UsersIcon className="h-4 w-4 mr-1 text-gray-500" />
-                        {company.statistics?.totalNewHires || 0}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-gray-600">
-                        <CalendarIcon className="h-4 w-4 mr-1" />
-                        {new Date(company.createdDate).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={company.isActive ? "default" : "secondary"}>
-                        {company.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        className="h-8"
-                        onClick={() => navigate(`/companies/${company.companyId}/dashboard`)}
-                      >
-                        <ChartBarIcon className="h-4 w-4 mr-1" />
-                        View Analytics
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={() => navigate(`/companies/${company.companyId}/edit`)}
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <TrashIcon className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                filteredCompanies.map(company => (
+                  <TableRow key={company.companyId} className="hover:bg-blue-50/30">
+                    {editingCompanyId === company.companyId ? (
+                      <TableCell colSpan={7} className="bg-blue-50/50">
+                        <CompanyEditForm
+                          company={company}
+                          onCancel={handleCancelEdit}
+                          onSave={handleSaveEdit}
+                        />
+                      </TableCell>
+                    ) : (
+                      <>
+                        <TableCell className="font-medium text-blue-900">
+                          {company.companyName}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-blue-800">
+                            <UsersIcon className="h-4 w-4 mr-1 text-blue-600" />
+                            {company.statistics?.pendingSetups || 0}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-blue-800">
+                            <UsersIcon className="h-4 w-4 mr-1 text-blue-600" />
+                            {company.statistics?.totalNewHires || 0}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-blue-800">
+                            <CalendarIcon className="h-4 w-4 mr-1 text-blue-600" />
+                            {new Date(company.createdDate).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={company.isActive ? "default" : "secondary"}
+                            className={company.isActive ? "bg-green-100 text-green-700 hover:bg-green-100" : "bg-red-100 text-red-700 hover:bg-red-100"}
+                          >
+                            {company.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            className="text-blue-700 hover:bg-blue-100 hover:text-blue-800"
+                            onClick={() => navigate(`/companies/${company.companyId}/dashboard`)}
+                          >
+                            <ChartBarIcon className="h-4 w-4 mr-1" />
+                            View Analytics
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-blue-700 hover:bg-blue-100 hover:text-blue-800"
+                              onClick={() => handleEdit(company.companyId)}
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </>
+                    )}
                   </TableRow>
                 ))
               )}
