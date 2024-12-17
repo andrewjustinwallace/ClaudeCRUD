@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using FirstDay.API.Data;
 using FirstDay.API.Services;
 using FirstDay.API.Repositories;
 using System.Text.Json.Serialization;
@@ -25,10 +24,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
-
-// Add PostgreSQL DbContext
-builder.Services.AddDbContext<OnboardingContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register repositories
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();

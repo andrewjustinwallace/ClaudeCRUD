@@ -240,7 +240,19 @@ public class AdminService : IAdminService
     {
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QuerySingleOrDefaultAsync<int>(
-            "SELECT * FROM test.get_active_it_employees()");
+            "SELECT test.upsert_it_employee(@itemployeeid, @firstname, @lastname, @email, @hiredate, @usertypeid, @username, @password, @isactive);",
+            new
+            {
+                itemployeeid = employeeDto.ITEmployeeId,
+                firstname = employeeDto.FirstName,
+                lastname = employeeDto.LastName,
+                email = employeeDto.Email,
+                hiredate = employeeDto.HireDate.Date.Year.ToString() + "-" + employeeDto.HireDate.Date.Month.ToString() + "-" + employeeDto.HireDate.Date.Day.ToString(),
+                usertypeid = employeeDto.UserTypeId,
+                username = employeeDto.Username,
+                password = employeeDto.Password,
+                isactive = employeeDto.IsActive
+            });
     }
 
     public async Task<bool> AssignCompanyToEmployeeAsync(int companyId, int employeeId)

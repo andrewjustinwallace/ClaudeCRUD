@@ -29,6 +29,12 @@ const MainMenu = () => {
               >
                 Companies
               </Link>
+              <Link
+                to="/employees"
+                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/employees')}`}
+              >
+                IT Employees
+              </Link>
             </div>
           </div>
         </div>

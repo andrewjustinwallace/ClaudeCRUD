@@ -407,15 +407,16 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- IT Employee Management Functions
-CREATE OR REPLACE FUNCTION test.upsert_it_employee(
+--select * from test.upsert_it_employee(6, 'asdf', 'asdf', 'asdf', '2024-12-17', 2, 'asdf', 'asdf', true)
+CREATE OR replace FUNCTION test.upsert_it_employee(
     p_it_employee_id INTEGER,
-    p_first_name VARCHAR(50),
-    p_last_name VARCHAR(50),
-    p_email VARCHAR(100),
-    p_hire_date DATE,
+    p_first_name TEXT,
+    p_last_name TEXT,
+    p_email TEXT,
+    p_hire_date TEXT,
     p_user_type_id INTEGER,
-    p_username VARCHAR(1000),
-    p_password VARCHAR(1000),
+    p_username TEXT,
+    p_password TEXT,
     p_is_active BOOLEAN DEFAULT TRUE
 )
 RETURNS INTEGER AS $$
@@ -440,7 +441,7 @@ BEGIN
             p_first_name,
             p_last_name,
             p_email,
-            p_hire_date,
+            to_date(p_hire_date, 'YYYY-MM-DD'),
             p_user_type_id,
             p_username,
             p_password,
@@ -455,7 +456,7 @@ BEGIN
         SET FirstName = p_first_name,
             LastName = p_last_name,
             Email = p_email,
-            HireDate = p_hire_date,
+            HireDate = to_date(p_hire_date, 'YYYY-MM-DD'),
             UserTypeID = p_user_type_id,
             Username = p_username,
             Password = CASE WHEN p_password IS NOT NULL THEN p_password ELSE Password END,
