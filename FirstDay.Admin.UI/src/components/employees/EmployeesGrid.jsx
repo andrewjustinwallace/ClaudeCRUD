@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_BASE_URL } from '../../config/api';
-import Modal from '../shared/Modal';
-import EmployeeForm from './components/EmployeeForm';
-import EmployeeTable from './components/EmployeeTable';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
+import Modal from "../shared/Modal";
+import EmployeeForm from "./components/EmployeeForm";
+import EmployeeTable from "./components/EmployeeTable";
 
 const EmployeesGrid = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     itEmployeeId: 0,
-    firstName: '',
-    lastName: '',
-    email: '',
-    hireDate: new Date().toISOString().split('T')[0],
-    userTypeId: 2,  // Default to IT Employee type
+    firstName: "",
+    lastName: "",
+    email: "",
+    hireDate: new Date().toISOString().split("T")[0],
+    userTypeId: 2, // Default to IT Employee type
     isActive: true,
-    username: '',
-    password: '',
+    username: "",
+    password: "",
     companies: [],
     companyCount: 0,
-    onChange: (newForm) => setEditForm(newForm)
+    onChange: (newForm) => setEditForm(newForm),
   });
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const EmployeesGrid = () => {
         setEmployees(response.data);
         setLoading(false);
       } catch (err) {
-        setError('Error fetching employees');
+        setError("Error fetching employees");
         setLoading(false);
       }
     };
@@ -46,9 +46,9 @@ const EmployeesGrid = () => {
     setEditingId(employee.itEmployeeId);
     setEditForm({
       ...employee,
-      hireDate: new Date(employee.hireDate).toISOString().split('T')[0],
-      password: '',  // Clear password on edit
-      onChange: (newForm) => setEditForm(newForm)
+      hireDate: new Date(employee.hireDate).toISOString().split("T")[0],
+      password: "", // Clear password on edit
+      onChange: (newForm) => setEditForm(newForm),
     });
   };
 
@@ -61,7 +61,22 @@ const EmployeesGrid = () => {
         setEditingId(null);
       }
     } catch (err) {
-      setError('Error updating employee');
+      setError("Error updating employee");
+    }
+  };
+
+  const handleDelete = async (employeeId) => {
+    try {
+      const response = await axios.delete(
+        `${API_BASE_URL}/itemployee/${employeeId}`
+      );
+      if (response.data) {
+        const refreshResponse = await axios.get(`${API_BASE_URL}/itemployee`);
+        setEmployees(refreshResponse.data);
+        setEditingId(null);
+      }
+    } catch (err) {
+      setError("Error updating employee");
     }
   };
 
@@ -74,21 +89,21 @@ const EmployeesGrid = () => {
         setIsAddModalOpen(false);
         setEditForm({
           itEmployeeId: 0,
-          firstName: '',
-          lastName: '',
-          email: '',
-          hireDate: new Date().toISOString().split('T')[0],
+          firstName: "",
+          lastName: "",
+          email: "",
+          hireDate: new Date().toISOString().split("T")[0],
           userTypeId: 2,
           isActive: true,
-          username: '',
-          password: '',
+          username: "",
+          password: "",
           companies: [],
           companyCount: 0,
-          onChange: (newForm) => setEditForm(newForm)
+          onChange: (newForm) => setEditForm(newForm),
         });
       }
     } catch (err) {
-      setError('Error adding employee');
+      setError("Error adding employee");
     }
   };
 
@@ -96,47 +111,62 @@ const EmployeesGrid = () => {
     setEditingId(null);
     setEditForm({
       itEmployeeId: 0,
-      firstName: '',
-      lastName: '',
-      email: '',
-      hireDate: new Date().toISOString().split('T')[0],
+      firstName: "",
+      lastName: "",
+      email: "",
+      hireDate: new Date().toISOString().split("T")[0],
       userTypeId: 2,
       isActive: true,
-      username: '',
-      password: '',
+      username: "",
+      password: "",
       companies: [],
       companyCount: 0,
-      onChange: (newForm) => setEditForm(newForm)
+      onChange: (newForm) => setEditForm(newForm),
     });
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-xl">Loading...</div>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
 
-  if (error) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-xl text-red-600">{error}</div>
-    </div>
-  );
+  if (error)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl text-red-600">{error}</div>
+      </div>
+    );
 
-  const filteredEmployees = employees.filter(employee =>
-    `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEmployees = employees.filter(
+    (employee) =>
+      `${employee.firstName} ${employee.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      employee.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">IT Employees</h1>
-        <button 
+        <button
           onClick={() => setIsAddModalOpen(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
           </svg>
           Add Employee
         </button>
@@ -169,7 +199,7 @@ const EmployeesGrid = () => {
           {searchTerm && (
             <button
               className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-              onClick={() => setSearchTerm('')}
+              onClick={() => setSearchTerm("")}
             >
               ✕
             </button>
@@ -183,6 +213,8 @@ const EmployeesGrid = () => {
         editingId={editingId}
         handleSave={handleSave}
         handleCancel={handleCancel}
+        editForm={editForm}
+        handleDelete={handleDelete}
       />
     </div>
   );

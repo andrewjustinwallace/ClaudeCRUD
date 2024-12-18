@@ -80,7 +80,7 @@ public class ITEmployeeController : ControllerBase
             }
 
             // Set IsActive to false instead of physically deleting
-            employee.IsActive = false;
+            employee.IsActive = !employee.IsActive;
             await _adminService.UpsertITEmployeeAsync(employee);
             return Ok(true);
         }

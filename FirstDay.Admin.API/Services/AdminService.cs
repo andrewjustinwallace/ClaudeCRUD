@@ -230,10 +230,18 @@ public class AdminService : IAdminService
 
     public async Task<ITEmployeeDTO?> GetITEmployeeByIdAsync(int id)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
-        return await connection.QuerySingleOrDefaultAsync<ITEmployeeDTO>(
-            "SELECT * FROM test.get_it_employee(@ITEmployeeId)",
-            new { ITEmployeeId = id });
+        try
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            var result = await connection.QuerySingleOrDefaultAsync<ITEmployeeDTO>(
+                "SELECT * FROM test.get_it_employee(@ITEmployeeId)",
+                new { ITEmployeeId = id });
+            return result;
+        }
+        catch (Exception ex)
+        {
+            return new ITEmployeeDTO();
+        }
     }
 
     public async Task<int> UpsertITEmployeeAsync(ITEmployeeDTO employeeDto)

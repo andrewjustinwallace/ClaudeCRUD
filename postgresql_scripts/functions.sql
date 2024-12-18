@@ -732,17 +732,19 @@ BEGIN
 		count(c.CompanyId)
     FROM test.ITEmployees e
     JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
-	JOIN test.ITEmployeeCompanies ec ON e.ITEmployeeID = ec.ITEmployeeID
-	JOIN test.Companies c ON ec.CompanyID = c.CompanyID
+	left JOIN test.ITEmployeeCompanies ec ON e.ITEmployeeID = ec.ITEmployeeID
+	left JOIN test.Companies c ON ec.CompanyID = c.CompanyID
 	group by e.ITEmployeeID, e.FirstName, e.LastName, e.Email, e.HireDate
 		, e.UserTypeID, ut.TypeName, e.CreatedDate, e.ModifiedDate, e.IsActive
     ORDER BY e.LastName, e.FirstName;
 END;
 $$ LANGUAGE plpgsql;
 
+
+--select * from test.get_it_employee(18)
 CREATE OR REPLACE FUNCTION test.get_it_employee(p_itemployee_id integer)
 RETURNS TABLE (
-    it_employee_id INTEGER,
+    itemployeeid INTEGER,
     firstname VARCHAR(50),
     lastname VARCHAR(50),
     email VARCHAR(100),
