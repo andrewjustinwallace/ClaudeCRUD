@@ -12,7 +12,6 @@ const ITSetupGrid = () => {
     setupTypeId: 0,
     name: "",
     description: "",
-    isActive: true,
     estimatedTime: 0,
     priority: 1,
   });
@@ -42,7 +41,6 @@ const ITSetupGrid = () => {
       setupTypeId: 0,
       name: "",
       description: "",
-      isActive: true,
       estimatedTime: 0,
       priority: 1,
     });
@@ -53,9 +51,8 @@ const ITSetupGrid = () => {
     setSelectedSetupType(setupType);
     setFormData({
       setupTypeId: setupType.setupTypeId,
-      name: setupType.name || "",
+      name: setupType.setupName || "",
       description: setupType.description || "",
-      isActive: setupType.isActive ?? true,
       estimatedTime: setupType.estimatedTime || 0,
       priority: setupType.priority || 1,
     });
@@ -81,11 +78,11 @@ const ITSetupGrid = () => {
 
   const filteredSetupTypes = setupTypes.filter((setup) => {
     if (!setup || !searchTerm) return true;
-    
+
     const name = setup.name || "";
     const description = setup.description || "";
     const searchLower = searchTerm.toLowerCase();
-    
+
     return (
       name.toLowerCase().includes(searchLower) ||
       description.toLowerCase().includes(searchLower)
@@ -93,19 +90,19 @@ const ITSetupGrid = () => {
   });
 
   const getStatisticsForSetupType = (setupTypeId) => {
-    return statistics.find((stat) => stat?.setupTypeId === setupTypeId) || {
-      totalAssignments: 0,
-      completedAssignments: 0,
-      averageCompletionTime: 0,
-    };
+    return (
+      statistics.find((stat) => stat?.setupTypeId === setupTypeId) || {
+        totalAssignments: 0,
+        completedAssignments: 0,
+        averageCompletionTime: 0,
+      }
+    );
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          IT Setup Task Types
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-900">IT Setup Types</h1>
         <button
           onClick={handleAdd}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-flex items-center"
@@ -181,7 +178,7 @@ const ITSetupGrid = () => {
                 <tr key={setupType?.setupTypeId || Math.random()}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {setupType?.name || "N/A"}
+                      {setupType?.setupName || "N/A"}
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -211,17 +208,6 @@ const ITSetupGrid = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        setupType?.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {setupType?.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => handleEdit(setupType)}
@@ -250,7 +236,7 @@ const ITSetupGrid = () => {
                 </label>
                 <input
                   type="text"
-                  value={formData.name}
+                  value={formData.setupName}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
@@ -310,23 +296,6 @@ const ITSetupGrid = () => {
                     required
                   />
                 </div>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isActive: e.target.checked })
-                  }
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label
-                  htmlFor="isActive"
-                  className="ml-2 text-sm text-gray-700"
-                >
-                  Active
-                </label>
               </div>
               <div className="flex justify-end space-x-2 mt-4">
                 <button

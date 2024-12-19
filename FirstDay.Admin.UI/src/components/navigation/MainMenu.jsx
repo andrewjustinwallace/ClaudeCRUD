@@ -59,7 +59,7 @@ const MainMenu = () => {
                   "/itsetup"
                 )}`}
               >
-                IT Setup Tasks
+                IT Setup Types
               </Link>
             </div>
           </div>

@@ -660,14 +660,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
 CREATE OR REPLACE FUNCTION test.get_active_setup_types()
 RETURNS TABLE (
-    setup_type_id INTEGER,
-    setup_name VARCHAR(100),
+    setuptypeid INTEGER,
+    setupname VARCHAR(100),
     description VARCHAR(500),
-    estimated_duration_minutes INTEGER,
-    created_date TIMESTAMP,
-    modified_date TIMESTAMP
+    estimateddurationminutes INTEGER,
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP
 ) AS $$
 BEGIN
     RETURN QUERY
