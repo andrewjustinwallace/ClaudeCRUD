@@ -53,6 +53,14 @@ const MainMenu = () => {
               >
                 New Hires
               </Link>
+              <Link
+                to="/itsetup"
+                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive(
+                  "/itsetup"
+                )}`}
+              >
+                IT Setup Tasks
+              </Link>
             </div>
           </div>
         </div>
