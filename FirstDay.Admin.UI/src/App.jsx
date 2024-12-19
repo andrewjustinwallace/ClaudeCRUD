@@ -1,9 +1,10 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import MainMenu from './components/navigation/MainMenu';
-import Dashboard from './components/Dashboard';
-import CompaniesGrid from './components/companies/CompaniesGrid';
-import EmployeesGrid from './components/employees/EmployeesGrid';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainMenu from "./components/navigation/MainMenu";
+import Dashboard from "./components/Dashboard";
+import CompaniesGrid from "./components/companies/CompaniesGrid";
+import EmployeesGrid from "./components/employees/EmployeesGrid";
+import NewHiresGrid from "./components/newhires/NewHiresGrid";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/companies" element={<CompaniesGrid />} />
           <Route path="/employees" element={<EmployeesGrid />} />
+          <Route path="/newhire" element={<NewHiresGrid />} />
         </Routes>
       </div>
     </Router>

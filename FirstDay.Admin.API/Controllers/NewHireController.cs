@@ -41,12 +41,14 @@ public class NewHireController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteNewHire(int id)
     {
-        var result = await _adminService.DeleteNewHireAsync(id);
-        if (!result)
+        var newHire = await _adminService.GetNewHireByIdAsync(id);
+        if (newHire == null)
         {
             return NotFound();
         }
-        return NoContent();
+        newHire.IsActive = !newHire.IsActive;
+        await _adminService.UpsertNewHireAsync(newHire);
+        return Ok(true);
     }
 
     [HttpGet("{id}/progress")]

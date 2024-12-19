@@ -100,32 +100,33 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {newHires.slice(0, 5).map((hire) => (
-                <tr key={hire.newHireId}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {hire.firstName} {hire.lastName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {hire.companyName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {new Date(hire.startDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        new Date(hire.startDate) > new Date()
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {new Date(hire.startDate) > new Date()
-                        ? "Pending"
-                        : "Active"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {newHires.slice(0, 5).map((hire, index) => {
+                const uniqueKey = `${hire.firstName}-${hire.lastName}-${hire.email}-${index}`;
+                return (
+                  <tr key={uniqueKey}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {hire.firstName} {hire.lastName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {hire.company?.companyName || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {new Date(hire.startDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          hire.isActive
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {hire.isActive ? "Active" : "Pending"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -135,9 +136,9 @@ const Dashboard = () => {
       <div className="mt-8">
         <h2 className="text-2xl font-semibold mb-4">Companies Overview</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {companies.map((company) => (
+          {companies.map((company, index) => (
             <div
-              key={company.companyId}
+              key={`${company.companyId || index}`}
               className="bg-white rounded-lg shadow p-6"
             >
               <h3 className="text-lg font-semibold mb-2">

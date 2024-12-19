@@ -1,3 +1,5 @@
+using FirstDay.Admin.API.DTOs;
+
 namespace FirstDay.Admin.API.Services;
 
 public class AdminService : IAdminService
@@ -143,10 +145,10 @@ public class AdminService : IAdminService
             "SELECT * FROM test.get_new_hires()");
     }
 
-    public async Task<NewHire?> GetNewHireByIdAsync(int id)
+    public async Task<NewHireDTO?> GetNewHireByIdAsync(int id)
     {
         using var connection = new NpgsqlConnection(_connectionString);
-        return await connection.QuerySingleOrDefaultAsync<NewHire>(
+        return await connection.QuerySingleOrDefaultAsync<NewHireDTO>(
             "SELECT * FROM test.get_new_hire_by_id(@NewHireId)",
             new { NewHireId = id });
     }
@@ -155,23 +157,19 @@ public class AdminService : IAdminService
     {
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QuerySingleAsync<int>(
-            "SELECT test.upsert_new_hire(@NewHireId, @CompanyId, @FirstName, @LastName, " +
-            "@Email, @Title, @Department, @StartDate, @IsActive, @AssignedToEmployeeId)",
+            "SELECT test.upsert_new_hire(@NewHireId, @FirstName, @LastName, " +
+            "@Email, @CompanyId, @StartDate, @IsActive)",
             new
             {
                 NewHireId = newHire.NewHireId ?? 0,
-                newHire.CompanyId,
-                newHire.FirstName,
-                newHire.LastName,
-                newHire.Email,
-                newHire.Title,
-                newHire.Department,
-                newHire.StartDate,
-                newHire.IsActive,
-                newHire.AssignedToEmployeeId
+                FirstName = newHire.FirstName,
+                LastName = newHire.LastName,
+                Email = newHire.Email,
+                CompanyId = newHire.CompanyId,
+                StartDate = newHire.StartDate.Year.ToString() + "-" + newHire.StartDate.Month.ToString() + "-" + newHire.StartDate.Day.ToString(),
+                IsActive = newHire.IsActive
             });
     }
-
     public async Task<bool> DeleteNewHireAsync(int id)
     {
         using var connection = new NpgsqlConnection(_connectionString);

@@ -21,6 +21,7 @@ drop function test.get_overdue_tasks;
 
 update test.itemployees set username = 'testadminuser', password = 'test123test' where itemployeeid = 1
 SELECT * FROM test.get_active_companies()
+SELECT * FROM test.get_new_hires()
 SELECT * FROM test.get_it_employees()
 */
 
@@ -478,7 +479,7 @@ CREATE OR REPLACE FUNCTION test.upsert_new_hire(
     p_last_name VARCHAR(50),
     p_email VARCHAR(100),
     p_company_id INTEGER,
-    p_hire_date DATE,
+    p_hire_date text,
     p_is_active BOOLEAN DEFAULT TRUE
 )
 RETURNS INTEGER AS $$
@@ -502,7 +503,7 @@ BEGIN
             p_last_name,
             p_email,
             p_company_id,
-            p_hire_date,
+			to_date(p_hire_date, 'YYYY-MM-DD'),
             p_is_active,
             CURRENT_TIMESTAMP,
             CURRENT_TIMESTAMP
@@ -515,7 +516,7 @@ BEGIN
             LastName = p_last_name,
             Email = p_email,
             CompanyID = p_company_id,
-            HireDate = p_hire_date,
+            HireDate = to_date(p_hire_date, 'YYYY-MM-DD'),
             IsActive = p_is_active,
             ModifiedDate = CURRENT_TIMESTAMP
         WHERE NewHireID = p_new_hire_id
@@ -777,15 +778,15 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION test.get_new_hires()
 RETURNS TABLE (
-    new_hire_id INTEGER,
+    newhireid INTEGER,
     firstname VARCHAR(50),
     lastname VARCHAR(50),
     email VARCHAR(100),
-    company_id INTEGER,
-    company_name VARCHAR(100),
-    start_date DATE,
-    created_date TIMESTAMP,
-    modified_date TIMESTAMP,
+    companyid INTEGER,
+    companyname VARCHAR(100),
+    startdate DATE,
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP,
     isactive bool
 ) AS $$
 BEGIN
@@ -810,15 +811,15 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION test.get_new_hire_by_id(p_newhire_id integer)
 RETURNS TABLE (
-    new_hire_id INTEGER,
+    newhireid INTEGER,
     firstname VARCHAR(50),
     lastname VARCHAR(50),
     email VARCHAR(100),
-    company_id INTEGER,
-    company_name VARCHAR(100),
-    start_date DATE,
-    created_date TIMESTAMP,
-    modified_date TIMESTAMP,
+    companyid INTEGER,
+    companyname VARCHAR(100),
+    startdate DATE,
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP,
     isactive bool
 ) AS $$
 BEGIN

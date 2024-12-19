@@ -29,7 +29,7 @@ public interface IAdminService
 
     // New Hire Management
     Task<IEnumerable<NewHire>> GetActiveNewHiresAsync();
-    Task<NewHire?> GetNewHireByIdAsync(int id);
+    Task<NewHireDTO?> GetNewHireByIdAsync(int id);
     Task<int> UpsertNewHireAsync(NewHireDTO newHire);
     Task<bool> DeleteNewHireAsync(int id);
     Task<NewHireProgress?> GetNewHireProgressAsync(int id);
