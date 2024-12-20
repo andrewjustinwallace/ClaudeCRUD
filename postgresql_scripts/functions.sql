@@ -1283,3 +1283,39 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION test.get_new_hires_by_company(p_company_id INTEGER)
+RETURNS TABLE (
+    newhireid INTEGER,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    email VARCHAR(100),
+    companyid INTEGER,
+    companyname VARCHAR(100),
+    startdate DATE,
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP,
+    isactive bool
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        nh.NewHireID,
+        nh.FirstName,
+        nh.LastName,
+        nh.Email,
+        nh.CompanyID,
+        c.CompanyName,
+        nh.HireDate,
+        nh.CreatedDate,
+        nh.ModifiedDate,
+        nh.IsActive
+    FROM test.NewHires nh
+    JOIN test.Companies c ON nh.CompanyID = c.CompanyID
+    WHERE nh.CompanyID = p_company_id
+    ORDER BY nh.HireDate DESC, nh.LastName, nh.FirstName;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+

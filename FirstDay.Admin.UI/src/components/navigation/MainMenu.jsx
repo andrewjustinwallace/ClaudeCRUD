@@ -61,6 +61,14 @@ const MainMenu = () => {
               >
                 IT Setup Types
               </Link>
+              <Link
+                to="/setuptasks"
+                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive(
+                  "/setuptasks"
+                )}`}
+              >
+                Setup Tasks
+              </Link>
             </div>
           </div>
         </div>
