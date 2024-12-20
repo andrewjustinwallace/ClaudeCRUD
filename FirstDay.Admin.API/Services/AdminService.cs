@@ -27,10 +27,11 @@ public class AdminService : IAdminService
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QuerySingleAsync<int>(
             "SELECT test.upsert_company(@CompanyId, @CompanyName, @IsActive)",
-            new { 
-                CompanyId = company.CompanyId ?? 0, 
-                company.CompanyName, 
-                company.IsActive 
+            new
+            {
+                CompanyId = company.CompanyId ?? 0,
+                company.CompanyName,
+                company.IsActive
             });
     }
 
@@ -71,9 +72,10 @@ public class AdminService : IAdminService
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QuerySingleAsync<int>(
             "SELECT test.upsert_user_type(@UserTypeId, @TypeName)",
-            new { 
-                UserTypeId = userType.UserTypeId ?? 0, 
-                userType.TypeName 
+            new
+            {
+                UserTypeId = userType.UserTypeId ?? 0,
+                userType.TypeName
             });
     }
 
@@ -90,8 +92,9 @@ public class AdminService : IAdminService
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QuerySingleAsync<int>(
             "SELECT test.upsert_setup_type(@SetupTypeId, @SetupName, @Description, @EstimatedDurationMinutes, @IsActive)",
-            new { 
-                SetupTypeId = setupType.SetupTypeId ?? 0, 
+            new
+            {
+                SetupTypeId = setupType.SetupTypeId ?? 0,
                 setupType.SetupName,
                 setupType.Description,
                 setupType.EstimatedDurationMinutes,
@@ -273,5 +276,64 @@ public class AdminService : IAdminService
         using var connection = new NpgsqlConnection(_connectionString);
         return await connection.QuerySingleOrDefaultAsync<bool>(
             "SELECT * FROM test.get_active_it_employees()");
+    }
+
+    public async Task<IEnumerable<SetupTaskDTO>> GetSetupTasksByCompanyAsync(int companyId)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QueryAsync<SetupTaskDTO>(
+            "SELECT * FROM test.get_setup_tasks_by_company(@CompanyId)",
+                new { CompanyId = companyId });
+    }
+
+    public async Task<IEnumerable<SetupTaskDTO>> GetSetupTasksByEmployeeAsync(int employeeId)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QueryAsync<SetupTaskDTO>(
+            "SELECT * FROM test.get_setup_tasks_by_employee(@ITEmployeeId)",
+                new { ITEmployeeId = employeeId });
+    }
+
+    public async Task<IEnumerable<SetupTaskDTO>> GetSetupTasksByNewHireAsync(int newHireId)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QueryAsync<SetupTaskDTO>(
+            "SELECT * FROM test.get_setup_tasks_by_newhire(@NewHireId)",
+                new { NewHireId = newHireId });
+    }
+
+    public async Task<int> UpsertSetupTaskAsync(SetupTaskDTO setupTask)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleAsync<int>(
+            @"SELECT test.upsert_setup_task(
+                @ITSetupTaskId, @ITEmployeeId, @NewHireId, @SetupTypeId, 
+                @ScheduledDate, @IsCompleted, @CompletedDate, @Notes, @Details)",
+            new
+            {
+                ITSetupTaskId = setupTask.TaskId,
+                ITEmployeeId = setupTask.ItEmployeeId,
+                NewHireId = setupTask.NewHireId,
+                SetupTypeId = setupTask.SetupTypeId,
+                ScheduledDate = setupTask.ScheduledDate,
+                IsCompleted = setupTask.IsCompleted,
+                CompletedDate = setupTask.CompletedDate,
+                Notes = setupTask.Notes ?? string.Empty,
+                Details = setupTask.Details ?? string.Empty
+            });
+    }
+
+    public async Task<bool> CompleteSetupTaskAsync(int taskId, int itEmployeeId, int newHireId, string notes)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QuerySingleAsync<bool>(
+            "SELECT test.update_task_completion(@TaskId, @ITEmployeeId, @NewHireId, @Notes)",
+            new 
+            { 
+                TaskId = taskId,
+                ITEmployeeId = itEmployeeId,
+                NewHireId = newHireId,
+                Notes = notes ?? string.Empty
+            });
     }
 }

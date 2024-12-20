@@ -971,6 +971,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+
 -- New Hire Onboarding Status
 CREATE OR REPLACE FUNCTION test.get_new_hire_onboarding_status(
     p_company_id INTEGER
@@ -1015,6 +1017,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+
 -- Company Statistics
 CREATE OR REPLACE FUNCTION test.get_company_statistics()
 RETURNS TABLE (
@@ -1048,6 +1052,8 @@ BEGIN
     ORDER BY c.CompanyName;
 END;
 $$ LANGUAGE plpgsql;
+
+
 
 -- Audit Trail Function
 CREATE OR REPLACE FUNCTION test.get_recent_changes(
@@ -1132,3 +1138,148 @@ BEGIN
     ORDER BY modified_date DESC;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- Function to get all setup tasks for a specific new hire
+CREATE OR REPLACE FUNCTION test.get_setup_tasks_by_newhire(
+    p_new_hire_id INTEGER
+)
+RETURNS TABLE (
+    taskid INTEGER,
+    setuptype VARCHAR(100),
+    setuptypeid INTEGER,
+    itemployeeid INTEGER,
+    itemployeename TEXT,
+    companyid INTEGER,
+    companyname VARCHAR(100),
+    scheduleddate DATE,
+    iscompleted BOOLEAN,
+    completeddate TIMESTAMP,
+    notes VARCHAR(500),
+    details VARCHAR(1000),
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        t.ITSetupTaskID,
+        st.SetupName,
+        st.SetupTypeID,
+        e.ITEmployeeID,
+        e.FirstName || ' ' || e.LastName,
+        c.CompanyID,
+        c.CompanyName,
+        t.ScheduledDate,
+        t.IsCompleted,
+        t.CompletedDate,
+        t.Notes,
+        t.Details,
+        t.CreatedDate,
+        t.ModifiedDate
+    FROM test.ITSetupTasks t
+    JOIN test.SetupTypes st ON t.SetupTypeID = st.SetupTypeID
+    JOIN test.ITEmployees e ON t.ITEmployeeID = e.ITEmployeeID
+    JOIN test.NewHires nh ON t.NewHireID = nh.NewHireID
+    JOIN test.Companies c ON nh.CompanyID = c.CompanyID
+    WHERE t.NewHireID = p_new_hire_id
+    ORDER BY t.ScheduledDate DESC, t.CreatedDate DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+-- Function to get all setup tasks for a specific IT employee
+CREATE OR REPLACE FUNCTION test.get_setup_tasks_by_employee(
+    p_it_employee_id INTEGER
+)
+RETURNS TABLE (
+    taskid INTEGER,
+    setuptype VARCHAR(100),
+    setuptypeid INTEGER,
+    companyid INTEGER,
+    companyname VARCHAR(100),
+    newhireid INTEGER,
+    newhirename TEXT,
+    scheduleddate DATE,
+    iscompleted BOOLEAN,
+    completeddate TIMESTAMP,
+    notes VARCHAR(500),
+    details VARCHAR(1000),
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        t.ITSetupTaskID,
+        st.SetupName,
+        st.SetupTypeID,
+        c.CompanyID,
+        c.CompanyName,
+        nh.NewHireID,
+        nh.FirstName || ' ' || nh.LastName,
+        t.ScheduledDate,
+        t.IsCompleted,
+        t.CompletedDate,
+        t.Notes,
+        t.Details,
+        t.CreatedDate,
+        t.ModifiedDate
+    FROM test.ITSetupTasks t
+    JOIN test.SetupTypes st ON t.SetupTypeID = st.SetupTypeID
+    JOIN test.NewHires nh ON t.NewHireID = nh.NewHireID
+    JOIN test.Companies c ON nh.CompanyID = c.CompanyID
+    WHERE t.ITEmployeeID = p_it_employee_id
+    ORDER BY t.ScheduledDate DESC, t.CreatedDate DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Function to get all setup tasks for a specific company
+CREATE OR REPLACE FUNCTION test.get_setup_tasks_by_company(
+    p_company_id INTEGER
+)
+RETURNS TABLE (
+    taskid INTEGER,
+    setuptype VARCHAR(100),
+    setuptypeid INTEGER,
+    itemployeeid INTEGER,
+    itemployeename TEXT,
+    newhireid INTEGER,
+    newhirename TEXT,
+    scheduleddate DATE,
+    iscompleted BOOLEAN,
+    completeddate TIMESTAMP,
+    notes VARCHAR(500),
+    details VARCHAR(1000),
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        t.ITSetupTaskID,
+        st.SetupName,
+        st.SetupTypeID,
+        e.ITEmployeeID,
+        e.FirstName || ' ' || e.LastName,
+        nh.NewHireID,
+        nh.FirstName || ' ' || nh.LastName,
+        t.ScheduledDate,
+        t.IsCompleted,
+        t.CompletedDate,
+        t.Notes,
+        t.Details,
+        t.CreatedDate,
+        t.ModifiedDate
+    FROM test.ITSetupTasks t
+    JOIN test.SetupTypes st ON t.SetupTypeID = st.SetupTypeID
+    JOIN test.ITEmployees e ON t.ITEmployeeID = e.ITEmployeeID
+    JOIN test.NewHires nh ON t.NewHireID = nh.NewHireID
+    WHERE nh.CompanyID = p_company_id
+    ORDER BY t.ScheduledDate DESC, t.CreatedDate DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+

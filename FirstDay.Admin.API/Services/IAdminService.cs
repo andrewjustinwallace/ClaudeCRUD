@@ -1,5 +1,6 @@
 using FirstDay.Admin.API.Models;
 using FirstDay.Admin.API.Models.StoredProcedureModels;
+using FirstDay.Admin.API.DTOs;
 
 namespace FirstDay.Admin.API.Services;
 
@@ -38,9 +39,17 @@ public interface IAdminService
     Task<IEnumerable<NewHireSetupStatus>> GetNewHireSetupStatusAsync(int? companyId);
     Task<bool> CompleteNewHireSetupAsync(int id);
 
+    // IT Employee Management
     Task<IEnumerable<ITEmployeeDTO>> GetITEmployeesAsync();
     Task<ITEmployeeDTO?> GetITEmployeeByIdAsync(int id);
     Task<int> UpsertITEmployeeAsync(ITEmployeeDTO employeeDto);
     Task<bool> AssignCompanyToEmployeeAsync(int companyId, int employeeId);
     Task<bool> RemoveCompanyFromEmployeeAsync(int companyId, int employeeId);
+
+    // Setup Task Management
+    Task<IEnumerable<SetupTaskDTO>> GetSetupTasksByCompanyAsync(int companyId);
+    Task<IEnumerable<SetupTaskDTO>> GetSetupTasksByEmployeeAsync(int employeeId);
+    Task<IEnumerable<SetupTaskDTO>> GetSetupTasksByNewHireAsync(int newHireId);
+    Task<int> UpsertSetupTaskAsync(SetupTaskDTO setupTask);
+    Task<bool> CompleteSetupTaskAsync(int taskId, int itEmployeeId, int newHireId, string notes);
 }
