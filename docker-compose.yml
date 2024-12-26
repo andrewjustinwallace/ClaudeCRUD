@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  firstday-api:
+    build:
+      context: .
+      dockerfile: FirstDay.API/Dockerfile
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=firstday;Username=postgres;Password=yourpassword
+    depends_on:
+      - postgres
+
+  firstday-ui:
+    build:
+      context: ./FirstDay.UI
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - firstday-api
+
+  firstday-admin-api:
+    build:
+      context: .
+      dockerfile: FirstDay.Admin.API/Dockerfile
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=firstday;Username=postgres;Password=yourpassword
+    depends_on:
+      - postgres
+
+  firstday-admin-ui:
+    build:
+      context: ./FirstDay.Admin.UI
+      dockerfile: Dockerfile
+    ports:
+      - "3001:80"
+    depends_on:
+      - firstday-admin-api
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=firstday
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yourpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgresql_scripts:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:

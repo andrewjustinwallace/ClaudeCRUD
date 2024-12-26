@@ -1,13 +1,29 @@
 {
   "profiles": {
-    "ClaudeCRUD.API": {
+    "FirstDay.API": {
       "commandName": "Project",
-        "launchBrowser": true,
-        "launchUrl": "swagger",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:62322;http://localhost:62323"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:58000/",
+      "sslPort": 44301
     }
   }
 }
