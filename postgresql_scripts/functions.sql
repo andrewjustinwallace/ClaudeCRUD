@@ -280,7 +280,8 @@ BEGIN
     FROM test.ITEmployees e
     JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
     WHERE e.Username = p_username 
-    AND e.Password = p_password;
+    AND e.Password = p_password
+	AND e.IsActive = TRUE;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -418,7 +419,7 @@ CREATE OR replace FUNCTION test.upsert_it_employee(
     p_hire_date TEXT,
     p_user_type_id INTEGER,
     p_username TEXT,
-    p_password TEXT,
+    --p_password TEXT,
     p_is_active BOOLEAN DEFAULT TRUE
 )
 RETURNS INTEGER AS $$
@@ -434,7 +435,7 @@ BEGIN
             HireDate,
             UserTypeID,
             Username,
-            Password,
+            --Password,
             IsActive,
             CreatedDate,
             ModifiedDate
@@ -446,7 +447,7 @@ BEGIN
             to_date(p_hire_date, 'YYYY-MM-DD'),
             p_user_type_id,
             p_username,
-            p_password,
+            --p_password,
             p_is_active,
             CURRENT_TIMESTAMP,
             CURRENT_TIMESTAMP
@@ -461,7 +462,7 @@ BEGIN
             HireDate = to_date(p_hire_date, 'YYYY-MM-DD'),
             UserTypeID = p_user_type_id,
             Username = p_username,
-            Password = CASE WHEN p_password IS NOT NULL THEN p_password ELSE Password END,
+            --Password = CASE WHEN p_password IS NOT NULL THEN p_password ELSE Password END,
             IsActive = p_is_active,
             ModifiedDate = CURRENT_TIMESTAMP
         WHERE ITEmployeeID = p_it_employee_id
@@ -716,7 +717,8 @@ RETURNS TABLE (
     createddate TIMESTAMP,
     modifieddate TIMESTAMP,
     isactive bool,
-    companyCount bigint
+    companyCount bigint,
+    username VARCHAR(1000)
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -731,7 +733,8 @@ BEGIN
         e.CreatedDate,
         e.ModifiedDate,
 		e.IsActive,
-		count(c.CompanyId)
+		count(c.CompanyId),
+		e.Username
     FROM test.ITEmployees e
     JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
 	left JOIN test.ITEmployeeCompanies ec ON e.ITEmployeeID = ec.ITEmployeeID
@@ -755,7 +758,8 @@ RETURNS TABLE (
     usertypename VARCHAR(50),
     createddate TIMESTAMP,
     modifieddate TIMESTAMP,
-    isactive bool
+    isactive bool,
+    username VARCHAR(1000)
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -769,7 +773,8 @@ BEGIN
         ut.TypeName,
         e.CreatedDate,
         e.ModifiedDate,
-		e.IsActive
+		e.IsActive,
+		e.username
     FROM test.ITEmployees e
     JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
 	where e.itemployeeid = p_itemployee_id
