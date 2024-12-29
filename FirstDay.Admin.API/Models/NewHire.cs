@@ -11,11 +11,7 @@ public class NewHire
     public string Department { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
     public bool IsActive { get; set; }
-    public int? AssignedToEmployeeId { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime ModifiedDate { get; set; }
-    
-    // Navigation properties
-    public Company? Company { get; set; }
-    public ITEmployee? AssignedEmployee { get; set; }
+    public string CompanyName { get; set; }
 }

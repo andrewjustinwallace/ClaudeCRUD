@@ -11,6 +11,7 @@ select * from test.authenticate_user('it', 'it')
 
 select * from test.itsetuptasks where itsetuptaskid = 111
 select * from test.ITEmployees
+select * from test.newhires
 
 drop function test.get_new_hire_setup_status;
 drop function test.get_it_employee_pending_tasks;
@@ -1332,6 +1333,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+-- select * from test.get_new_hires_by_company(7)
 CREATE OR REPLACE FUNCTION test.get_new_hires_by_company(p_company_id INTEGER)
 RETURNS TABLE (
     newhireid INTEGER,
