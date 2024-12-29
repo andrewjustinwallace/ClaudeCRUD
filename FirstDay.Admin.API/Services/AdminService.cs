@@ -245,6 +245,14 @@ public class AdminService : IAdminService
         }
     }
 
+    public async Task<IEnumerable<ITEmployeeDTO>> GetITEmployeesByCompanyAsync(int companyId)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        return await connection.QueryAsync<ITEmployeeDTO>(
+            "SELECT * FROM test.get_it_employee_by_company(@CompanyId)",
+            new { CompanyId = companyId });
+    }
+
     public async Task<int> UpsertITEmployeeAsync(ITEmployeeDTO employeeDto)
     {
         using var connection = new NpgsqlConnection(_connectionString);
@@ -336,4 +344,5 @@ public class AdminService : IAdminService
                 Notes = notes ?? string.Empty
             });
     }
+
 }

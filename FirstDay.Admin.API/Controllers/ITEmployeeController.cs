@@ -20,7 +20,7 @@ public class ITEmployeeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ITEmployeeDTO>>> GetTEmployees()
+    public async Task<ActionResult<IEnumerable<ITEmployeeDTO>>> GetITEmployees()
     {
         try
         {
@@ -30,6 +30,21 @@ public class ITEmployeeController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving active IT employees");
+            return StatusCode(500, "An error occurred while retrieving IT employees");
+        }
+    }
+
+    [HttpGet("company/{companyId}")]
+    public async Task<ActionResult<IEnumerable<ITEmployeeDTO>>> GetITEmployeesByCompany(int companyId)
+    {
+        try
+        {
+            var employees = await _adminService.GetITEmployeesByCompanyAsync(companyId);
+            return Ok(employees);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving IT employees for company ID: {CompanyId}", companyId);
             return StatusCode(500, "An error occurred while retrieving IT employees");
         }
     }

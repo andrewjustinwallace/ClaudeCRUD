@@ -782,6 +782,50 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+-- select * from test.get_it_employee_by_company(1)
+CREATE OR REPLACE FUNCTION test.get_it_employee_by_company(p_company_id integer)
+RETURNS TABLE (
+    itemployeeid INTEGER,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    email VARCHAR(100),
+    hiredate DATE,
+    usertypeid INTEGER,
+    usertypename VARCHAR(50),
+    createddate TIMESTAMP,
+    modifieddate TIMESTAMP,
+    isactive bool,
+    username VARCHAR(1000),
+    companyid integer,
+    companyname varchar(100)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        e.ITEmployeeID,
+        e.FirstName,
+        e.LastName,
+        e.Email,
+        e.HireDate,
+        e.UserTypeID,
+        ut.TypeName,
+        e.CreatedDate,
+        e.ModifiedDate,
+		e.IsActive,
+		e.username,
+		c.CompanyID,
+        c.CompanyName
+    FROM test.ITEmployees e
+    JOIN test.UserTypes ut ON e.UserTypeID = ut.UserTypeID
+	JOIN test.itemployeecompanies iec ON e.ITEmployeeID = iec.itemployeecompanyid
+	JOIN test.companies c ON iec.itemployeecompanyid = c.companyid
+	where iec.itemployeecompanyid = p_company_id
+    ORDER BY e.LastName, e.FirstName;
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION test.get_new_hires()
 RETURNS TABLE (
     newhireid INTEGER,

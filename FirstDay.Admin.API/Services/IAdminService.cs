@@ -45,6 +45,7 @@ public interface IAdminService
     Task<int> UpsertITEmployeeAsync(ITEmployeeDTO employeeDto);
     Task<bool> AssignCompanyToEmployeeAsync(int companyId, int employeeId);
     Task<bool> RemoveCompanyFromEmployeeAsync(int companyId, int employeeId);
+    Task<IEnumerable<ITEmployeeDTO>> GetITEmployeesByCompanyAsync(int companyId);
 
     // Setup Task Management
     Task<IEnumerable<SetupTaskDTO>> GetSetupTasksByCompanyAsync(int companyId);
