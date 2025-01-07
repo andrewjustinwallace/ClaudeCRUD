@@ -1,13 +1,21 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const MainMenu = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => {
     return location.pathname === path
       ? "bg-gray-900 text-white"
       : "text-gray-300 hover:bg-gray-700 hover:text-white";
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('companies');
+    navigate('/login');
   };
 
   return (
@@ -70,6 +78,14 @@ const MainMenu = () => {
                 Setup Tasks
               </Link>
             </div>
+          </div>
+          <div>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
